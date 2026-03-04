@@ -18,7 +18,7 @@ if ($hour < 12) {
     <h3>
         <?php echo esc_html($greeting . ', ' . $user->display_name); ?>
     </h3>
-    <p class="dss-welcome-subtitle">Enlaces rápido de <?php echo esc_html(get_bloginfo('name')); ?></p>
+    <p class="dss-welcome-subtitle">Enlaces rápidos de <?php echo esc_html(get_bloginfo('name')); ?></p>
 
     <div class="dss-quick-links">
         <a href="<?php echo esc_url(admin_url('edit.php?post_type=product')); ?>" class="dss-quick-link">
