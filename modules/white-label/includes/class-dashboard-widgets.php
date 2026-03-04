@@ -75,6 +75,12 @@ class FFL_Admin_Theme_Widgets
                 'Estado del Sistema (Tiempo Real)',
                 array($this, 'render_system_status_widget')
             );
+
+            wp_add_dashboard_widget(
+                'dss_heavy_queries_widget',
+                'Consultas BD Pesadas',
+                array($this, 'render_heavy_queries_widget')
+            );
         }
 
         if (class_exists('WooCommerce')) {
@@ -97,6 +103,9 @@ class FFL_Admin_Theme_Widgets
         }
         if (isset($normal['dss_system_status_widget'])) {
             $ordered_normal['dss_system_status_widget'] = $normal['dss_system_status_widget'];
+        }
+        if (isset($normal['dss_heavy_queries_widget'])) {
+            $ordered_normal['dss_heavy_queries_widget'] = $normal['dss_heavy_queries_widget'];
         }
         if (isset($normal['dss_store_overview_widget'])) {
             $ordered_normal['dss_store_overview_widget'] = $normal['dss_store_overview_widget'];
@@ -190,6 +199,36 @@ class FFL_Admin_Theme_Widgets
     public function render_system_status_widget()
     {
         require DSS_WHITE_LABEL_PLUGIN_DIR . 'admin/views/view-widget-system-status.php';
+    }
+
+    public function render_heavy_queries_widget()
+    {
+        global $wpdb;
+        $savequeries_enabled = defined('SAVEQUERIES') && SAVEQUERIES;
+        $heavy_queries = array();
+
+        if ($savequeries_enabled && !empty($wpdb->queries)) {
+            // Get all queries and sort them by execution time (index 1 is time)
+            $all_queries = $wpdb->queries;
+            usort($all_queries, function ($a, $b) {
+                return $b[1] <=> $a[1];
+            });
+
+            // Get top 10 slower than 0.005 seconds
+            $count = 0;
+            foreach ($all_queries as $query_data) {
+                if ($query_data[1] > 0.005 && $count < 10) {
+                    $heavy_queries[] = array(
+                        'sql' => $query_data[0],
+                        'time' => $query_data[1],
+                        'trace' => $query_data[2]
+                    );
+                    $count++;
+                }
+            }
+        }
+
+        require DSS_WHITE_LABEL_PLUGIN_DIR . 'admin/views/view-widget-heavy-queries.php';
     }
 
     public function render_store_overview_widget()
