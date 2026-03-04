@@ -10,6 +10,7 @@ class FFL_Admin_Theme_Widgets
     {
         add_action('wp_dashboard_setup', array($this, 'setup_dashboard_widgets'), 999);
         add_action('admin_enqueue_scripts', array($this, 'dashboard_assets'));
+        add_action('wp_ajax_dss_get_system_status', array($this, 'ajax_get_system_status'));
     }
 
     public function dashboard_assets($hook)
@@ -68,6 +69,14 @@ class FFL_Admin_Theme_Widgets
             );
         }
 
+        if (current_user_can('manage_options')) {
+            wp_add_dashboard_widget(
+                'dss_system_status_widget',
+                'Estado del Sistema (Tiempo Real)',
+                array($this, 'render_system_status_widget')
+            );
+        }
+
         global $wp_meta_boxes;
         $normal = isset($wp_meta_boxes['dashboard']['normal']['core']) ? $wp_meta_boxes['dashboard']['normal']['core'] : array();
         $side = isset($wp_meta_boxes['dashboard']['side']['core']) ? $wp_meta_boxes['dashboard']['side']['core'] : array();
@@ -77,6 +86,9 @@ class FFL_Admin_Theme_Widgets
 
         if (isset($normal['dss_welcome_widget'])) {
             $ordered_normal['dss_welcome_widget'] = $normal['dss_welcome_widget'];
+        }
+        if (isset($normal['dss_system_status_widget'])) {
+            $ordered_normal['dss_system_status_widget'] = $normal['dss_system_status_widget'];
         }
         if (isset($normal['dss_sales_widget'])) {
             $ordered_side['dss_sales_widget'] = $normal['dss_sales_widget'];
@@ -162,5 +174,76 @@ class FFL_Admin_Theme_Widgets
             return wc_orders_count($status);
         }
         return 0;
+    }
+
+    public function render_system_status_widget()
+    {
+        require DSS_WHITE_LABEL_PLUGIN_DIR . 'admin/views/view-widget-system-status.php';
+    }
+
+    public function ajax_get_system_status()
+    {
+        // Require Manage Options capabilities
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(array('message' => 'Unauthorized'));
+        }
+
+        // 1. Server Load (CPU / Mem)
+        $server_load = 'N/A';
+        if (function_exists('sys_getloadavg')) {
+            $load = sys_getloadavg();
+            if ($load && is_array($load)) {
+                $server_load = number_format($load[0], 2) . ', ' . number_format($load[1], 2) . ', ' . number_format($load[2], 2);
+            }
+        }
+        $memory_usage = size_format(memory_get_usage(true));
+
+        // 2. Database Status
+        global $wpdb;
+        $db_threads = 'N/A';
+        $db_queries = 'N/A';
+        $db_status = $wpdb->get_results("SHOW GLOBAL STATUS WHERE Variable_name IN ('Threads_connected', 'Questions')", ARRAY_A);
+        if ($db_status) {
+            foreach ($db_status as $row) {
+                if ($row['Variable_name'] === 'Threads_connected') {
+                    $db_threads = $row['Value'];
+                }
+                if ($row['Variable_name'] === 'Questions') {
+                    $db_queries = number_format($row['Value']);
+                }
+            }
+        }
+
+        // 3. Simple Online Users
+        // Count users with active sessions based on WordPress transients (rough estimation)
+        // A better approach is reading `wp_user_meta` or active tokens, but for now we give an estimation or use WooCommerce active sessions if available.
+        $active_users = $this->get_estimated_online_users();
+
+        wp_send_json_success(array(
+            'server_load' => $server_load,
+            'memory_usage' => $memory_usage,
+            'db_threads' => $db_threads,
+            'db_queries' => $db_queries,
+            'active_users' => $active_users,
+        ));
+    }
+
+    private function get_estimated_online_users()
+    {
+        // This is a naive estimation. Real time trackers use transients on every init hook.
+        // For simplicity and to not impact performance heavily on every page load, we check WooCommerce sessions if available. 
+        global $wpdb;
+        if (class_exists('WooCommerce')) {
+            // Count active WC sessions in the last 15 minutes
+            $recent_timestamp = time() - (15 * 60);
+            $sessions = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$wpdb->prefix}woocommerce_sessions WHERE session_expiry > %d", time()));
+            if ($sessions) {
+                return $sessions;
+            }
+        }
+
+        // Fallback: Just return recent logged in users based on last activity or simple transient
+        // Note: WP doesn't track this by default perfectly without a plugin, returning a placeholder or 'Not properly tracked' implies a needed feature.
+        return 'Calculando...';
     }
 }

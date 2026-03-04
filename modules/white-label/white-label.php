@@ -8,7 +8,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('DSS_WHITE_LABEL_VERSION', '1.2');
+define('DSS_WHITE_LABEL_VERSION', '1.3');
 define('DSS_WHITE_LABEL_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('DSS_WHITE_LABEL_PLUGIN_URL', plugin_dir_url(__FILE__));
 
