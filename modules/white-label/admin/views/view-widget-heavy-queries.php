@@ -6,12 +6,12 @@ if (!defined('ABSPATH')) {
 <div class="dss-heavy-queries">
 
     <?php if (!$savequeries_enabled): ?>
-        <div class="notice notice-warning inline">
-            <p><strong>Monitorización desactivada:</strong> Para ver las consultas lentas, define <code>SAVEQUERIES</code>
-                como <code>true</code> en tu archivo <code>wp-config.php</code>.</p>
-            <p><em>Nota: Activar esta opción tiene un impacto en el rendimiento. Úsala solo para diagnóstico y recuerde
-                    desactivarla en producción permanente.</em></p>
-            <code>define('SAVEQUERIES', true);</code>
+        <div class="notice notice-warning inline" style="margin: 0 0 10px 0;">
+            <p><strong>Monitorización desactivada:</strong> El seguimiento de consultas consume recursos. Actívelo sólo para
+                diagnóstico temporal.</p>
+        </div>
+        <div class="dss-hq-actions">
+            <button class="button button-primary dss-toggle-savequeries" data-enable="true">Activar Monitorización</button>
         </div>
     <?php else: ?>
         <?php if (!empty($heavy_queries)): ?>
@@ -38,14 +38,55 @@ if (!defined('ABSPATH')) {
                 <?php endforeach; ?>
             </ul>
         <?php else: ?>
-            <div class="notice notice-success inline">
-                <p><strong>Excelente:</strong> La constante <code>SAVEQUERIES</code> está activa y no se detectaron consultas
-                    destacablemente lentas durante la carga de esta página.</p>
+            <div class="notice notice-success inline" style="margin: 0 0 10px 0;">
+                <p><strong>Excelente:</strong> La monitorización está activa y no se detectaron consultas destacablemente lentas
+                    durante la carga de esta página.</p>
             </div>
         <?php endif; ?>
+
+        <hr style="margin-top: 15px; border: 0; border-top: 1px solid #c3c4c7;">
+        <div class="dss-hq-actions">
+            <button class="button button-secondary dss-toggle-savequeries dss-btn-danger" data-enable="false">Desactivar
+                Monitorización</button>
+        </div>
     <?php endif; ?>
 
 </div>
+
+<script>
+    jQuery(document).ready(function ($) {
+        $('.dss-toggle-savequeries').on('click', function (e) {
+            e.preventDefault();
+            var $btn = $(this);
+            var enable = $btn.data('enable');
+            var originalText = $btn.text();
+
+            $btn.text('Procesando...').prop('disabled', true);
+
+            $.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'dss_toggle_savequeries',
+                    enable: enable,
+                    nonce: '<?php echo wp_create_nonce("dss_toggle_savequeries"); ?>'
+                },
+                success: function (response) {
+                    if (response.success) {
+                        location.reload(); // Reload to show the new state
+                    } else {
+                        alert('Error: ' + response.data.message);
+                        $btn.text(originalText).prop('disabled', false);
+                    }
+                },
+                error: function () {
+                    alert('Ocurrió un error en la solicitud.');
+                    $btn.text(originalText).prop('disabled', false);
+                }
+            });
+        });
+    });
+</script>
 
 <style>
     .dss-heavy-queries {
@@ -110,5 +151,20 @@ if (!defined('ABSPATH')) {
     .dss-badge-danger {
         background: #fcf0e7;
         color: #d63638;
+    }
+
+    .dss-hq-actions {
+        margin-top: 10px;
+        text-align: right;
+    }
+
+    .dss-toggle-savequeries.dss-btn-danger {
+        color: #d63638;
+        border-color: #d63638;
+    }
+
+    .dss-toggle-savequeries.dss-btn-danger:hover {
+        background: #d63638;
+        color: #fff;
     }
 </style>

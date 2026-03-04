@@ -11,6 +11,7 @@ class FFL_Admin_Theme_Widgets
         add_action('wp_dashboard_setup', array($this, 'setup_dashboard_widgets'), 999);
         add_action('admin_enqueue_scripts', array($this, 'dashboard_assets'));
         add_action('wp_ajax_dss_get_system_status', array($this, 'ajax_get_system_status'));
+        add_action('wp_ajax_dss_toggle_savequeries', array($this, 'ajax_toggle_savequeries'));
     }
 
     public function dashboard_assets($hook)
@@ -285,6 +286,7 @@ class FFL_Admin_Theme_Widgets
                 'url' => $order->get_edit_order_url()
             );
         }
+
         return $recent_orders;
     }
 
@@ -391,5 +393,54 @@ class FFL_Admin_Theme_Widgets
         // Fallback: Just return recent logged in users based on last activity or simple transient
         // Note: WP doesn't track this by default perfectly without a plugin, returning a placeholder or 'Not properly tracked' implies a needed feature.
         return 'Calculando...';
+    }
+
+    public function ajax_toggle_savequeries()
+    {
+        if (!current_user_can('manage_options') || !isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'dss_toggle_savequeries')) {
+            wp_send_json_error(array('message' => 'Unauthorized or invalid nonce.'));
+        }
+
+        $enable = isset($_POST['enable']) && $_POST['enable'] === 'true';
+
+        // Find wp-config.php
+        $wp_config_path = ABSPATH . 'wp-config.php';
+        if (!file_exists($wp_config_path)) {
+            $wp_config_path = dirname(ABSPATH) . '/wp-config.php';
+        }
+
+        if (!file_exists($wp_config_path) || !is_writable($wp_config_path)) {
+            wp_send_json_error(array('message' => 'wp-config.php is not writable or cannot be found.'));
+        }
+
+        $config_contents = file_get_contents($wp_config_path);
+
+        // Check if SAVEQUERIES is already defined
+        if (preg_match('/define\s*\(\s*\'SAVEQUERIES\'\s*,\s*(true|false)\s*\)\s*;/i', $config_contents)) {
+            // Replace existing definition
+            $replacement = $enable ? "define('SAVEQUERIES', true);" : "define('SAVEQUERIES', false);";
+            $config_contents = preg_replace('/define\s*\(\s*\'SAVEQUERIES\'\s*,\s*(true|false)\s*\)\s*;/i', $replacement, $config_contents);
+        } else {
+            // It doesn't exist, we must inject it
+            // Safe place is right before the "That's all, stop editing!" comment
+            if ($enable) {
+                $injection = "\n/**\n * Auto-injected by DSS Suite Heavy Queries Widget\n */\ndefine('SAVEQUERIES', true);\n\n";
+                // Look for common stopping points
+                if (strpos($config_contents, '/* That\'s all, stop editing!') !== false) {
+                    $config_contents = str_replace('/* That\'s all, stop editing!', $injection . '/* That\'s all, stop editing!', $config_contents);
+                } else if (strpos($config_contents, '/** Sets up WordPress vars and included files. */') !== false) {
+                    $config_contents = str_replace('/** Sets up WordPress vars and included files. */', $injection . '/** Sets up WordPress vars and included files. */', $config_contents);
+                } else {
+                    // Fallback to inserting at the bottom of define blocks
+                    wp_send_json_error(array('message' => 'Could not find a safe place to inject the constant in wp-config.php. Please do it manually.'));
+                }
+            }
+        }
+
+        if (file_put_contents($wp_config_path, $config_contents)) {
+            wp_send_json_success(array('message' => 'wp-config.php updated successfully.'));
+        } else {
+            wp_send_json_error(array('message' => 'Failed to write to wp-config.php.'));
+        }
     }
 }
