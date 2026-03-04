@@ -1,0 +1,90 @@
+/* Welcome Widget */
+.dss-welcome h3 {
+	font-size: 1.4em;
+	margin: 0 0 4px;
+}
+.dss-welcome-subtitle {
+	color: #646970;
+	margin: 0 0 16px;
+}
+.dss-quick-links {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 10px;
+	margin-top: 12px;
+}
+.dss-quick-link {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 6px;
+	padding: 14px 8px;
+	background: #f6f7f7;
+	border-radius: 6px;
+	text-decoration: none;
+	color: #1d2327;
+	font-size: 13px;
+	transition: background 0.2s;
+}
+.dss-quick-link:hover {
+	background: #e0e0e0;
+	color: #1d2327;
+}
+.dss-quick-link .dashicons {
+	font-size: 24px;
+	width: 24px;
+	height: 24px;
+}
+
+/* Sales Widget */
+.dss-sales-grid {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 12px;
+}
+.dss-sales-card {
+	background: #f6f7f7;
+	border-radius: 6px;
+	padding: 14px;
+	display: flex;
+	flex-direction: column;
+}
+.dss-sales-card--pending {
+	background: #fef8ee;
+}
+.dss-sales-label {
+	font-size: 11px;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	color: #646970;
+	margin-bottom: 4px;
+}
+.dss-sales-amount {
+	font-size: 1.4em;
+	font-weight: 600;
+	color: #1d2327;
+}
+.dss-sales-amount--count {
+	font-size: 1.8em;
+}
+.dss-sales-orders {
+	font-size: 12px;
+	color: #646970;
+	margin-top: 2px;
+}
+.dss-sales-footer {
+	margin-top: 14px;
+	padding-top: 12px;
+	border-top: 1px solid #e0e0e0;
+	text-align: right;
+}
+.dss-sales-footer a {
+	text-decoration: none;
+	font-size: 13px;
+}
+
+@media (max-width: 480px) {
+	.dss-quick-links {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
