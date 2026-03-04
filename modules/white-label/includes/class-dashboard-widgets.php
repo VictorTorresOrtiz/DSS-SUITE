@@ -77,6 +77,14 @@ class FFL_Admin_Theme_Widgets
             );
         }
 
+        if (class_exists('WooCommerce')) {
+            wp_add_dashboard_widget(
+                'dss_store_overview_widget',
+                'Resumen de la Tienda',
+                array($this, 'render_store_overview_widget')
+            );
+        }
+
         global $wp_meta_boxes;
         $normal = isset($wp_meta_boxes['dashboard']['normal']['core']) ? $wp_meta_boxes['dashboard']['normal']['core'] : array();
         $side = isset($wp_meta_boxes['dashboard']['side']['core']) ? $wp_meta_boxes['dashboard']['side']['core'] : array();
@@ -89,6 +97,9 @@ class FFL_Admin_Theme_Widgets
         }
         if (isset($normal['dss_system_status_widget'])) {
             $ordered_normal['dss_system_status_widget'] = $normal['dss_system_status_widget'];
+        }
+        if (isset($normal['dss_store_overview_widget'])) {
+            $ordered_normal['dss_store_overview_widget'] = $normal['dss_store_overview_widget'];
         }
         if (isset($normal['dss_sales_widget'])) {
             $ordered_side['dss_sales_widget'] = $normal['dss_sales_widget'];
@@ -179,6 +190,102 @@ class FFL_Admin_Theme_Widgets
     public function render_system_status_widget()
     {
         require DSS_WHITE_LABEL_PLUGIN_DIR . 'admin/views/view-widget-system-status.php';
+    }
+
+    public function render_store_overview_widget()
+    {
+        $top_product = $this->get_top_selling_product();
+        $recent_orders = $this->get_latest_orders();
+        $low_stock_products = $this->get_low_stock_products();
+
+        require DSS_WHITE_LABEL_PLUGIN_DIR . 'admin/views/view-widget-store-overview.php';
+    }
+
+    private function get_top_selling_product()
+    {
+        $args = array(
+            'post_type' => 'product',
+            'meta_key' => 'total_sales',
+            'orderby' => 'meta_value_num',
+            'posts_per_page' => 1,
+            'post_status' => 'publish',
+        );
+        $loop = new WP_Query($args);
+
+        if ($loop->have_posts()) {
+            $loop->the_post();
+            $product = wc_get_product(get_the_ID());
+            $result = array(
+                'name' => $product->get_name(),
+                'sales' => $product->get_total_sales(),
+                'url' => get_edit_post_link(get_the_ID())
+            );
+            wp_reset_postdata();
+            return $result;
+        }
+        return false;
+    }
+
+    private function get_latest_orders($limit = 3)
+    {
+        $args = array(
+            'limit' => $limit,
+            'orderby' => 'date',
+            'order' => 'DESC',
+            'return' => 'objects',
+        );
+        $orders = wc_get_orders($args);
+        $recent_orders = array();
+
+        foreach ($orders as $order) {
+            $recent_orders[] = array(
+                'id' => $order->get_id(),
+                'status' => wc_get_order_status_name($order->get_status()),
+                'total' => $order->get_formatted_order_total(),
+                'customer' => $order->get_formatted_billing_full_name() ?: 'Invitado',
+                'url' => $order->get_edit_order_url()
+            );
+        }
+        return $recent_orders;
+    }
+
+    private function get_low_stock_products($limit = 5)
+    {
+        $args = array(
+            'post_type' => 'product',
+            'posts_per_page' => $limit,
+            'post_status' => 'publish',
+            'meta_query' => array(
+                'relation' => 'AND',
+                array(
+                    'key' => '_manage_stock',
+                    'value' => 'yes',
+                    'compare' => '='
+                ),
+                array(
+                    'key' => '_stock',
+                    'value' => 5, // WooCommerce default low stock threshold
+                    'compare' => '<=',
+                    'type' => 'NUMERIC'
+                )
+            )
+        );
+        $loop = new WP_Query($args);
+        $low_stock = array();
+
+        if ($loop->have_posts()) {
+            while ($loop->have_posts()) {
+                $loop->the_post();
+                $product = wc_get_product(get_the_ID());
+                $low_stock[] = array(
+                    'name' => $product->get_name(),
+                    'stock' => $product->get_stock_quantity(),
+                    'url' => get_edit_post_link(get_the_ID())
+                );
+            }
+            wp_reset_postdata();
+        }
+        return $low_stock;
     }
 
     public function ajax_get_system_status()
