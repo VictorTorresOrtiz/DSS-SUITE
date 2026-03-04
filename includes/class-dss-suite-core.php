@@ -27,13 +27,13 @@ class DSS_Suite_Core
             'file' => 'seo-manager/tagmanager.php',
         ),
         'white-label' => array(
-            'name' => 'White Label',
+            'name' => 'Widget & Theme controller',
             'description' => 'Añade nuevos widgets, renombra items y personaliza la apariencia del tema.',
             'file' => 'white-label/white-label.php',
         ),
         'cpt-sorter' => array(
             'name' => 'CPT Sorter',
-            'description' => 'Habilita ordenamiento manual (Drag & Drop) para cpt_portfolio.',
+            'description' => 'Habilita ordenamiento manual (Drag & Drop) para los cpt de themerex u otros temas.',
             'file' => 'cpt-sorter/function.php',
         )
     );

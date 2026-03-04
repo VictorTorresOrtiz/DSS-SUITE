@@ -2,7 +2,7 @@
 /**
  * Plugin Name: DSS SUITE
  * Plugin URI:  https://dssnetwork.es
- * Description: Unificación de todos los plugins esenciales de DSS NETWORK: Dashboard, SEO Manager, White Label y utilidades extra. Incluye un Centro de Control para activar/desactivar sus módulos.
+ * Description: Suite completa de plugins utilizados por la arquitectura de DSS NETWORK.
  * Version:     1.0.0
  * Author:      Víctor Torres Ortiz (DSS NETWORK)
  * Author URI:  https://dssnetwork.es

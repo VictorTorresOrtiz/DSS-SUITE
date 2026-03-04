@@ -51,9 +51,12 @@ class FFL_Admin_Theme_Widgets
 
     public function add_custom_widgets()
     {
+        $current_user = wp_get_current_user();
+        $user_name = !empty($current_user->user_firstname) ? $current_user->user_firstname : $current_user->display_name;
+
         wp_add_dashboard_widget(
             'dss_welcome_widget',
-            'Bienvenido a Abeille Formaciones',
+            'Bienvenido, ' . $user_name,
             array($this, 'render_welcome_widget')
         );
 
