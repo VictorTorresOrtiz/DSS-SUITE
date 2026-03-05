@@ -40,27 +40,27 @@ class DSS_Chatbox_Admin
     public function render_chatbox()
     {
         ?>
-        <div id="dss-chatbox-container" class="dss-chatbox-hidden">
+        <div id="dss-chatbox-container">
             <div id="dss-chatbox-button">
                 <span class="dashicons dashicons-format-chat"></span>
             </div>
             <div id="dss-chatbox-window">
                 <div class="dss-chatbox-header">
-                    <h3>Soporte DSS NETWORK</h3>
+                    <h3>Soporte Inteligente DSS</h3>
                     <button id="dss-chatbox-close">&times;</button>
                 </div>
-                <div class="dss-chatbox-body">
-                    <p>¿En qué podemos ayudarte hoy? Déjanos tu consulta y te responderemos lo antes posible.</p>
+                <div id="dss-chatbox-history" class="dss-chatbox-body">
+                    <div class="dss-message dss-bot-message">
+                        ¡Hola! Soy el asistente de DSS NETWORK. ¿En qué puedo ayudarte hoy?
+                    </div>
+                </div>
+                <div class="dss-chatbox-footer">
                     <form id="dss-chatbox-form">
-                        <div class="form-group">
-                            <input type="text" name="chat_name" placeholder="Tu nombre" required>
-                        </div>
-                        <div class="form-group">
-                            <textarea name="chat_message" placeholder="¿Cuál es tu consulta?" required></textarea>
-                        </div>
-                        <button type="submit" class="button button-primary">Enviar Consulta</button>
+                        <textarea name="chat_message" placeholder="Escribe tu duda aquí..." required></textarea>
+                        <button type="submit" id="dss-chat-send">
+                            <span class="dashicons dashicons-send"></span>
+                        </button>
                     </form>
-                    <div id="dss-chatbox-response" style="display:none;"></div>
                 </div>
             </div>
         </div>
@@ -68,30 +68,59 @@ class DSS_Chatbox_Admin
     }
 
     /**
-     * Handle AJAX chat inquiry.
+     * Handle AJAX chat inquiry with Gemini AI.
      */
     public function handle_chat_inquiry()
     {
         check_ajax_referer('dss_chatbox_nonce', 'nonce');
 
-        $name = isset($_POST['chat_name']) ? sanitize_text_field($_POST['chat_name']) : '';
         $message = isset($_POST['chat_message']) ? sanitize_textarea_field($_POST['chat_message']) : '';
+        $api_key = get_option('dss_suite_gemini_api_key');
 
-        if (empty($name) || empty($message)) {
-            wp_send_json_error(array('message' => 'Por favor, rellena todos los campos.'));
+        if (empty($message)) {
+            wp_send_json_error(array('message' => 'El mensaje no puede estar vacío.'));
         }
 
-        $to = 'v.torres@dssnetwork.es';
-        $subject = 'Nueva consulta desde el Chatbox de ' . get_bloginfo('name');
-        $body = "Has recibido una nueva consulta desde el chatbox de administración.\n\n";
-        $body .= "Nombre: $name\n";
-        $body .= "Mensaje:\n$message\n\n";
-        $body .= "--- \nEnviado desde DSS SUITE.";
+        if (empty($api_key)) {
+            wp_send_json_error(array('message' => 'Error: Configura tu Gemini API Key en los ajustes de DSS Suite.'));
+        }
 
-        $headers = array('Content-Type: text/plain; charset=UTF-8');
+        // System Prompt for context
+        $system_prompt = "Eres un asistente de soporte experto de DSS NETWORK (https://dssnetwork.es). 
+		Tu objetivo es ayudar a los clientes con dudas sobre sus sitios WordPress, servicios de DSS y soporte técnico general.
+		Sé amable, profesional y conciso. Si no sabes algo, sugiere contactar a v.torres@dssnetwork.es.
+		Habla siempre en español.";
 
-        wp_mail($to, $subject, $body, $headers);
+        $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" . $api_key;
 
-        wp_send_json_success(array('message' => '¡Gracias! Hemos recibido tu consulta y nos pondremos en contacto contigo pronto.'));
+        $body = array(
+            'contents' => array(
+                array(
+                    'role' => 'user',
+                    'parts' => array(
+                        array('text' => "Instrucciones de sistema: " . $system_prompt . "\n\nPregunta del cliente: " . $message)
+                    )
+                )
+            )
+        );
+
+        $response = wp_remote_post($url, array(
+            'body' => json_encode($body),
+            'headers' => array('Content-Type' => 'application/json'),
+            'timeout' => 30
+        ));
+
+        if (is_wp_error($response)) {
+            wp_send_json_error(array('message' => 'Error de conexión con la IA.'));
+        }
+
+        $data = json_decode(wp_remote_retrieve_body($response), true);
+
+        if (isset($data['candidates'][0]['content']['parts'][0]['text'])) {
+            $reply = $data['candidates'][0]['content']['parts'][0]['text'];
+            wp_send_json_success(array('reply' => $reply));
+        } else {
+            wp_send_json_error(array('message' => 'La IA no pudo procesar tu solicitud actualmente.'));
+        }
     }
 }
