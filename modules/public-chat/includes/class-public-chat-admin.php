@@ -362,7 +362,7 @@ class DSS_Public_Chat_Admin
         if (!empty($reply)) {
             wp_send_json_success(array('reply' => $reply));
         } else {
-            wp_send_json_error(array('message' => 'No se pudo obtener respuesta de la IA. Detalle: ' . $last_error));
+            wp_send_json_error(array('message' => 'Lo siento, no he podido obtener una respuesta. Por favor, inténtalo de nuevo.'));
         }
     }
 }

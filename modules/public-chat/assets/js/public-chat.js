@@ -70,7 +70,7 @@ jQuery(document).ready(function ($) {
     $imageUpload.val("");
 
     var $typing = $(
-      '<div class="dss-message dss-bot-message dss-typing">Calculando respuesta...</div>',
+      '<div class="dss-message dss-bot-message dss-typing"><span class="dss-dot"></span><span class="dss-dot"></span><span class="dss-dot"></span></div>',
     );
     $history.append($typing);
     scrollToBottom();
