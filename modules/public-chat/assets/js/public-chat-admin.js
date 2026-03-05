@@ -5,8 +5,20 @@ jQuery(document).ready(function ($) {
     var html = `
             <div class="dss-shortcut-card">
                 <button type="button" class="dss-remove-shortcut">&times;</button>
-                <input type="text" name="dss_public_chat_shortcuts[${index}][label]" placeholder="Título (ej: Hola)">
-                <input type="text" name="dss_public_chat_shortcuts[${index}][query]" placeholder="Prompt (ej: Hola, ¿cómo estás?)">
+                <div class="dss-shortcut-inputs">
+                    <div class="dss-form-group-inline">
+                        <label>Icono (Dashicon)</label>
+                        <input type="text" name="dss_public_chat_shortcuts[${index}][icon]" placeholder="dashicons-star-filled">
+                    </div>
+                    <div class="dss-form-group-inline">
+                        <label>Etiqueta del Botón</label>
+                        <input type="text" name="dss_public_chat_shortcuts[${index}][label]" placeholder="Título">
+                    </div>
+                </div>
+                <div class="dss-form-group">
+                    <label>Mensaje / Consulta (Prompt)</label>
+                    <input type="text" name="dss_public_chat_shortcuts[${index}][query]" placeholder="Prompt">
+                </div>
             </div>
         `;
     $(".dss-shortcuts-grid").append(html);

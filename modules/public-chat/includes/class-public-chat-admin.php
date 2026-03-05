@@ -147,11 +147,28 @@ class DSS_Public_Chat_Admin
                             <?php foreach ($shortcuts as $index => $shortcut): ?>
                                 <div class="dss-shortcut-card">
                                     <button type="button" class="dss-remove-shortcut">&times;</button>
-                                    <input type="text" name="dss_public_chat_shortcuts[<?php echo $index; ?>][label]"
-                                        placeholder="Título (ej: Hola)" value="<?php echo esc_attr($shortcut['label']); ?>">
-                                    <input type="text" name="dss_public_chat_shortcuts[<?php echo $index; ?>][query]"
-                                        placeholder="Prompt (ej: Hola, ¿cómo estás?)"
-                                        value="<?php echo esc_attr($shortcut['query']); ?>">
+                                    <div class="dss-shortcut-inputs">
+                                        <div class="dss-form-group-inline">
+                                            <label>Icono (Dashicon)</label>
+                                            <input type="text" name="dss_public_chat_shortcuts[<?php echo $index; ?>][icon]"
+                                                placeholder="dashicons-star-filled"
+                                                value="<?php echo esc_attr($shortcut['icon'] ?? ''); ?>">
+                                        </div>
+                                        <div class="dss-form-group-inline">
+                                            <label>Etiqueta del Botón</label>
+                                            <input type="text" name="dss_public_chat_shortcuts[<?php echo $index; ?>][label]"
+                                                placeholder="Título (ej: Hola)" value="<?php echo esc_attr($shortcut['label']); ?>">
+                                        </div>
+                                    </div>
+                                    <div class="dss-form-group">
+                                        <label>Mensaje / Consulta (Prompt)</label>
+                                        <input type="text" name="dss_public_chat_shortcuts[<?php echo $index; ?>][query]"
+                                            placeholder="Prompt (ej: Hola, ¿cómo estás?)"
+                                            value="<?php echo esc_attr($shortcut['query']); ?>">
+                                    </div>
+                                    <p class="dss-help-text">Busca iconos en la <a
+                                            href="https://developer.wordpress.org/resource/dashicons/" target="_blank">Librería de
+                                            Dashicons</a>.</p>
                                 </div>
                             <?php endforeach; ?>
                         <?php endif; ?>
@@ -214,6 +231,9 @@ class DSS_Public_Chat_Admin
                         <div class="dss-suggestion-chips">
                             <?php foreach ($shortcuts as $shortcut): ?>
                                 <button class="dss-chip" data-query="<?php echo esc_attr($shortcut['query']); ?>">
+                                    <?php if (!empty($shortcut['icon'])): ?>
+                                        <span class="dashicons <?php echo esc_attr($shortcut['icon']); ?>"></span>
+                                    <?php endif; ?>
                                     <?php echo esc_html($shortcut['label']); ?>
                                 </button>
                             <?php endforeach; ?>
