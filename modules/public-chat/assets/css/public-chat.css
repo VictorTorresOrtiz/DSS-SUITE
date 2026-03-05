@@ -10,15 +10,17 @@
 #dss-public-chat-button {
     width: 60px;
     height: 60px;
-    background: linear-gradient(135deg, #0073aa 0%, #005177 100%);
+    background: #fff;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #fff;
     cursor: pointer;
-    box-shadow: 0 4px 15px rgba(0, 115, 170, 0.4);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    padding: 5px;
+    border: 1px solid #eee;
 }
 
 #dss-public-chat-button:hover {

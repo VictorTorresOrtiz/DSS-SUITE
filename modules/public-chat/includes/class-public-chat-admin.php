@@ -25,6 +25,18 @@ class DSS_Public_Chat_Admin
 
         // Add settings section to DSS Suite
         add_action('admin_menu', array($this, 'add_settings_tab'), 20);
+        add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_assets'));
+    }
+
+    /**
+     * Enqueue admin assets.
+     */
+    public function enqueue_admin_assets($hook)
+    {
+        if ('dss-suite_page_dss-public-chat' !== $hook) {
+            return;
+        }
+        wp_enqueue_media();
     }
 
     /**
@@ -34,6 +46,7 @@ class DSS_Public_Chat_Admin
     {
         register_setting('dss_public_chat_group', 'dss_public_chat_prompt');
         register_setting('dss_public_chat_group', 'dss_public_chat_shortcuts');
+        register_setting('dss_public_chat_group', 'dss_public_chat_logo');
     }
 
     /**
@@ -57,7 +70,7 @@ class DSS_Public_Chat_Admin
      */
     public function render_settings_page()
     {
-        $prompt = get_option('dss_public_chat_prompt', 'Eres un asistente amable de DSS Network...');
+        $prompt = get_option('dss_public_chat_prompt', 'Eres un asistente amable de ' . get_bloginfo('name') . '...');
         $shortcuts = get_option('dss_public_chat_shortcuts', array());
         ?>
         <div class="wrap">
@@ -72,6 +85,21 @@ class DSS_Public_Chat_Admin
                             <textarea name="dss_public_chat_prompt" id="dss_public_chat_prompt" rows="5"
                                 class="large-text"><?php echo esc_textarea($prompt); ?></textarea>
                             <p class="description">Define cómo debe comportarse el bot con los visitantes de la web.</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="dss_public_chat_logo">Logo del Chat</label></th>
+                        <td>
+                            <?php $logo_url = get_option('dss_public_chat_logo', DSS_PUBLIC_CHAT_URL . 'assets/images/dss-logo.svg'); ?>
+                            <div class="dss-logo-preview-wrapper" style="margin-bottom: 10px;">
+                                <img id="dss-logo-preview" src="<?php echo esc_url($logo_url); ?>"
+                                    style="max-width: 100px; border: 1px solid #ccc; border-radius: 50%; padding: 5px; background: #f0f0f0;">
+                            </div>
+                            <input type="hidden" name="dss_public_chat_logo" id="dss_public_chat_logo"
+                                value="<?php echo esc_url($logo_url); ?>">
+                            <button type="button" id="dss-select-logo" class="button">Seleccionar Logo</button>
+                            <p class="description">Elige el icono que aparecerá en el botón flotante y en la cabecera del chat.
+                            </p>
                         </td>
                     </tr>
                     <tr>
@@ -113,6 +141,22 @@ class DSS_Public_Chat_Admin
                 $(document).on('click', '.dss-remove-shortcut', function () {
                     $(this).closest('.dss-shortcut-item').remove();
                 });
+
+                // Media Uploader for Logo
+                $('#dss-select-logo').on('click', function (e) {
+                    e.preventDefault();
+                    var frame = wp.media({
+                        title: 'Seleccionar Logo del Chat',
+                        button: { text: 'Usar este logo' },
+                        multiple: false
+                    });
+                    frame.on('select', function () {
+                        var attachment = frame.state().get('selection').first().toJSON();
+                        $('#dss-public-chat-logo').val(attachment.url);
+                        $('#dss-logo-preview').attr('src', attachment.url);
+                    });
+                    frame.open();
+                });
             });
         </script>
         <?php
@@ -138,21 +182,23 @@ class DSS_Public_Chat_Admin
     public function render_public_chatbox()
     {
         $shortcuts = get_option('dss_public_chat_shortcuts', array());
+        $logo_url = get_option('dss_public_chat_logo', DSS_PUBLIC_CHAT_URL . 'assets/images/dss-logo.svg');
         ?>
         <div id="dss-public-chat-container">
             <div id="dss-public-chat-button">
-                <span class="dashicons dashicons-format-chat"></span>
+                <img src="<?php echo esc_url($logo_url); ?>" alt="Chat Icon"
+                    style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
             </div>
             <div id="dss-public-chat-window" style="display: none;">
                 <div class="dss-public-chat-header">
-                    <img src="<?php echo DSS_PUBLIC_CHAT_URL . 'assets/images/dss-logo.svg'; ?>" alt="DSS Logo"
-                        class="dss-chatbox-logo"
+                    <img src="<?php echo esc_url($logo_url); ?>" alt="DSS Logo" class="dss-chatbox-logo"
                         style="border-radius: 50%; width: 30px; height: 30px; background: #fff; padding: 2px;">
-                    <h3>Asistente DSS</h3>
+                    <h3>Asistente Personal</h3>
                     <button id="dss-public-chat-close">&times;</button>
                 </div>
                 <div id="dss-public-chat-history" class="dss-public-chat-body">
-                    <div class="dss-message dss-bot-message">¡Hola! Soy tu asistente de DSS NETWORK. ¿En qué puedo ayudarte?
+                    <div class="dss-message dss-bot-message">¡Hola! Soy tu asistente de
+                        <?php echo esc_html(get_bloginfo('name')); ?>. ¿En qué puedo ayudarte?
                     </div>
 
                     <?php if (!empty($shortcuts)): ?>
