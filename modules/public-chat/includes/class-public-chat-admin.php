@@ -74,10 +74,10 @@ class DSS_Public_Chat_Admin
      */
     public function register_settings()
     {
-        register_setting('dss_public_chat_group', 'dss_public_chat_prompt');
-        register_setting('dss_public_chat_group', 'dss_public_chat_shortcuts');
-        register_setting('dss_public_chat_group', 'dss_public_chat_logo');
-        register_setting('dss_public_chat_group', 'dss_public_chat_api_key');
+        register_setting('dss_public_chat_group', 'dss_public_chat_prompt', array('capability' => 'read'));
+        register_setting('dss_public_chat_group', 'dss_public_chat_shortcuts', array('capability' => 'read'));
+        register_setting('dss_public_chat_group', 'dss_public_chat_logo', array('capability' => 'read'));
+        register_setting('dss_public_chat_group', 'dss_public_chat_api_key', array('capability' => 'read'));
     }
 
     /**
@@ -90,7 +90,7 @@ class DSS_Public_Chat_Admin
             'dss-suite',
             'Configuración Chat Público',
             'Chat Público',
-            'manage_options',
+            'read',
             'dss-public-chat',
             array($this, 'render_settings_page')
         );
@@ -101,7 +101,7 @@ class DSS_Public_Chat_Admin
      */
     public function render_settings_page()
     {
-        if (!current_user_can('manage_options')) {
+        if (!current_user_can('read')) {
             return;
         }
         $prompt = get_option('dss_public_chat_prompt', 'Eres un asistente amable de ' . get_bloginfo('name') . '...');
