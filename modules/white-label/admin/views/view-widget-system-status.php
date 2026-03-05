@@ -29,60 +29,14 @@
                 },
                 success: function (response) {
                     if (response.success && response.data) {
-                        $('#dss-server-load').html(response.data.server_load + '<br><small>Mem: ' + response.data.memory_usage + '</small>');
-                        $('#dss-db-status').html(response.data.db_threads + ' hilos<br><small>' + response.data.db_queries + ' q</small>');
+                        $('#dss-server-load').html(response.data.server_load + '<br><small style="font-weight:400; font-size:11px; color:#64748b;">Mem: ' + response.data.memory_usage + '</small>');
+                        $('#dss-db-status').html(response.data.db_threads + ' hilos<br><small style="font-weight:400; font-size:11px; color:#64748b;">' + response.data.db_queries + ' queries</small>');
                         $('#dss-active-users').text(response.data.active_users);
                     }
                 }
             });
         }
-
-        // Cargar inmediatamente
         fetchSystemStatus();
-
-        // Actualizar cada 10 segundos
         setInterval(fetchSystemStatus, 10000);
     });
 </script>
-
-<style>
-    .dss-system-status {
-        padding: 10px 0;
-    }
-
-    .dss-status-row {
-        display: flex;
-        justify-content: space-between;
-        gap: 15px;
-    }
-
-    .dss-status-item {
-        flex: 1;
-        background: #f0f0f1;
-        border-radius: 6px;
-        padding: 15px;
-        text-align: center;
-        border: 1px solid #c3c4c7;
-    }
-
-    .dss-status-item .dashicons {
-        font-size: 32px;
-        width: 32px;
-        height: 32px;
-        color: #2271b1;
-        margin-bottom: 10px;
-    }
-
-    .dss-status-item h4 {
-        margin: 0 0 5px 0;
-        font-size: 13px;
-        color: #3c434a;
-    }
-
-    .dss-status-item p {
-        margin: 0;
-        font-size: 15px;
-        font-weight: 600;
-        color: #1d2327;
-    }
-</style>

@@ -14,28 +14,29 @@ if ($hour < 12) {
     $greeting = 'Buenas noches';
 }
 ?>
-<div class="dss-welcome">
-    <h3>
-        <?php echo esc_html($greeting . ', ' . $user->display_name); ?>
-    </h3>
-    <p class="dss-welcome-subtitle">Enlaces rápidos de <?php echo esc_html(get_bloginfo('name')); ?></p>
+<div class="dss-welcome-container">
+    <div class="dss-welcome-header">
+        <h3><?php echo esc_html($greeting . ', ' . $user->display_name); ?></h3>
+        <p class="dss-welcome-subtitle">Enlaces rápidos de gestión para
+            <strong><?php echo esc_html(get_bloginfo('name')); ?></strong></p>
+    </div>
 
     <div class="dss-quick-links">
         <a href="<?php echo esc_url(admin_url('edit.php?post_type=product')); ?>" class="dss-quick-link">
             <span class="dashicons dashicons-products"></span>
-            Productos
+            <span>Productos</span>
         </a>
         <a href="<?php echo esc_url(admin_url('edit.php?post_type=shop_order')); ?>" class="dss-quick-link">
             <span class="dashicons dashicons-cart"></span>
-            Pedidos
+            <span>Pedidos</span>
         </a>
         <a href="<?php echo esc_url(admin_url('edit.php?post_type=page')); ?>" class="dss-quick-link">
             <span class="dashicons dashicons-admin-page"></span>
-            Páginas
+            <span>Páginas</span>
         </a>
         <a href="<?php echo esc_url(admin_url('upload.php')); ?>" class="dss-quick-link">
             <span class="dashicons dashicons-admin-media"></span>
-            Medios
+            <span>Medios</span>
         </a>
     </div>
 </div>
