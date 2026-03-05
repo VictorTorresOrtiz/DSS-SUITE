@@ -50,7 +50,7 @@ class FFL_Admin_Theme_Login
 
 	function login_message()
 	{
-		$action = isset($_REQUEST['action']) ? $_REQUEST['action'] : 'login';
+		$action = isset($_REQUEST['action']) ? sanitize_key($_REQUEST['action']) : 'login';
 		$title = $this->setting->get_setting('login_form_' . $action . '_title');
 		echo sprintf('<div class="login-subtitle">%s</div></div><div id="login-form"><div class="login-form"><h3 class="login-form-title">%s</h3>', $this->setting->get_setting('login_subtitle'), $title);
 	}

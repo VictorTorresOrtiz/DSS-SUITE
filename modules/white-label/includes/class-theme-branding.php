@@ -201,7 +201,35 @@ class DSS_Theme_Branding
         if (in_array($ext, array('svg', 'svgz'))) {
             $data['ext']  = $ext;
             $data['type'] = 'image/svg+xml';
+            $this->sanitize_svg($file);
         }
         return $data;
+    }
+
+    /**
+     * Strip potentially dangerous elements from an SVG file.
+     * Removes <script> tags and inline event handlers (onload, onclick, etc.).
+     */
+    private function sanitize_svg($file_path)
+    {
+        if (!file_exists($file_path) || !is_writable($file_path)) {
+            return;
+        }
+
+        $content = file_get_contents($file_path);
+        if (false === $content) {
+            return;
+        }
+
+        // Remove <script> blocks
+        $content = preg_replace('/<script[\s\S]*?<\/script>/i', '', $content);
+
+        // Remove on* event attributes (onclick, onload, onerror, etc.)
+        $content = preg_replace('/\s+on\w+\s*=\s*(?:"[^"]*"|\'[^\']*\'|[^\s>]*)/i', '', $content);
+
+        // Remove javascript: hrefs and src values
+        $content = preg_replace('/(?:href|src|xlink:href)\s*=\s*["\']?\s*javascript:[^"\'>\s]*/i', '', $content);
+
+        file_put_contents($file_path, $content);
     }
 }

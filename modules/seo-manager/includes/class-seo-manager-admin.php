@@ -59,6 +59,7 @@ class DSS_SEO_Manager_Admin
         }
 
         if (isset($_POST['save_tags'])) {
+            check_admin_referer('dss_seo_rules_nonce');
             $sanitized_rules = array();
             if (isset($_POST['tag_rules']) && is_array($_POST['tag_rules'])) {
                 foreach ($_POST['tag_rules'] as $rule) {
@@ -91,6 +92,7 @@ class DSS_SEO_Manager_Admin
 
             <div class="dss-seo-card">
                 <form method="post">
+                    <?php wp_nonce_field('dss_seo_rules_nonce'); ?>
                     <table class="wp-list-table widefat fixed striped dss-seo-table" id="tag-rules-table">
                         <thead>
                             <tr>

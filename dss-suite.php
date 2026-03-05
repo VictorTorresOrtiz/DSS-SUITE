@@ -3,7 +3,7 @@
  * Plugin Name: DSS SUITE
  * Plugin URI:  https://dssnetwork.es
  * Description: Suite completa de plugins utilizados por la arquitectura de DSS NETWORK.
- * Version:     2.0
+ * Version:     2.0.1
  * Author:      Víctor Torres Ortiz (DSS NETWORK)
  * Author URI:  https://dssnetwork.es
  * Text Domain: dss-suite
@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-define( 'DSS_SUITE_VERSION', '1.0.2' );
+define( 'DSS_SUITE_VERSION', '2.0.1' );
 define( 'DSS_SUITE_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'DSS_SUITE_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
