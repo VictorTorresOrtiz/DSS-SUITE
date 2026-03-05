@@ -290,7 +290,7 @@ class DSS_Suite_Core
             <p>Configuración global de inteligencia artificial y credenciales premium.</p>
 
             <form action="options.php" method="post">
-                <?php settings_fields('dss_suite_options_group'); ?>
+                <?php settings_fields('dss_suite_ai_options_group'); ?>
 
                 <div
                     style="margin-top: 20px; padding: 25px; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
