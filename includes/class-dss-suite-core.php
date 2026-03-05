@@ -32,8 +32,8 @@ class DSS_Suite_Core
             'file' => 'white-label/white-label.php',
         ),
         'cpt-sorter' => array(
-            'name' => 'CPT Sorter',
-            'description' => 'Habilita ordenamiento manual (Drag & Drop) para los cpt de themerex u otros temas.',
+            'name' => 'Content Sorter',
+            'description' => 'Ordenamiento manual (Drag & Drop) para cualquier CPT y taxonomía.',
             'file' => 'cpt-sorter/function.php',
         ),
         'chatbox' => array(

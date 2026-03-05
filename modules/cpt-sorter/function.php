@@ -1,143 +1,284 @@
 <?php
 /*
- * Module: CPT Sorter
- * Description: Habilita ordenamiento manual (Drag & Drop) para 'cpt_portfolio' y lo aplica automáticamente en el frontend.
+ * Module: Content Sorter
+ * Description: Ordenamiento manual (Drag & Drop) para CPTs y Taxonomías.
  */
 
 if (!defined('ABSPATH'))
     exit;
 
-// 0. Menú en DSS Suite
+define('DSS_SORTER_DIR', plugin_dir_path(__FILE__));
+define('DSS_SORTER_URL', plugin_dir_url(__FILE__));
+
+// ──────────────────────────────────────
+// Admin Menu
+// ──────────────────────────────────────
 add_action('admin_menu', function () {
     add_submenu_page(
         'dss-suite',
-        'CPT Sorter',
-        'CPT Sorter',
+        'Content Sorter',
+        'Content Sorter',
         'manage_options',
-        'cpt-sorter-settings',
-        'dss_cpt_sorter_render_page'
+        'dss-content-sorter',
+        'dss_sorter_render_page'
     );
 });
 
-function dss_cpt_sorter_render_page()
+// ──────────────────────────────────────
+// Settings Page
+// ──────────────────────────────────────
+function dss_sorter_render_page()
 {
-    ?>
-    <div class="wrap">
-        <h1><span class="dashicons dashicons-sort" style="font-size: 28px; width: 28px; height: 28px;"></span> CPT Sorter
-        </h1>
-        <p>Este módulo habilita el ordenamiento manual por arrastrar y soltar (Drag & Drop) para los portfolios.</p>
+    if (!current_user_can('manage_options'))
+        return;
 
-        <div
-            style="background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); max-width: 800px; margin-top: 20px;">
-            <h2>Instrucciones</h2>
-            <p>Para ordenar tus portfolios:</p>
-            <ol>
-                <li>Ve a <strong>Portfolios</strong> en el menú lateral.</li>
-                <li>Arrastra las filas hacia arriba o hacia abajo.</li>
-                <li>El orden se guardará automáticamente al soltar.</li>
-            </ol>
-            <p><a href="<?php echo admin_url('edit.php?post_type=cpt_portfolio'); ?>" class="button button-primary">Ir a
-                    Portfolios</a></p>
+    wp_enqueue_style('dss-sorter-admin', DSS_SORTER_URL . 'assets/css/sorter-admin.css', array('dashicons'), DSS_SUITE_VERSION);
+    wp_enqueue_script('dss-sorter-admin', DSS_SORTER_URL . 'assets/js/sorter-admin.js', array('jquery', 'jquery-ui-sortable'), DSS_SUITE_VERSION, true);
+    wp_localize_script('dss-sorter-admin', 'dssSorter', array(
+        'ajaxUrl' => admin_url('admin-ajax.php'),
+        'nonce' => wp_create_nonce('dss_sorter_nonce'),
+    ));
+
+    $post_types = get_post_types(array('public' => true), 'objects');
+    $taxonomies = get_taxonomies(array('public' => true, 'show_ui' => true), 'objects');
+
+    ?>
+    <div class="wrap dss-sorter-container">
+        <div class="dss-sorter-header">
+            <h1><span class="dashicons dashicons-sort" style="font-size:28px;width:28px;height:28px;color:#2271b1;"></span> Content Sorter</h1>
+            <span class="dss-badge">Drag & Drop</span>
+        </div>
+
+        <p class="dss-sorter-desc">
+            Selecciona un tipo de contenido o taxonomía y ordena sus elementos arrastrando y soltando.
+        </p>
+
+        <div class="dss-sorter-selector">
+            <div class="dss-sorter-group">
+                <label>Tipo de contenido</label>
+                <select id="dss-sorter-source">
+                    <option value="">— Seleccionar —</option>
+                    <optgroup label="Entradas (CPT)">
+                        <?php foreach ($post_types as $pt): ?>
+                            <?php if (in_array($pt->name, array('attachment')))
+                                continue; ?>
+                            <option value="cpt:<?php echo esc_attr($pt->name); ?>">
+                                <?php echo esc_html($pt->labels->name); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </optgroup>
+                    <optgroup label="Taxonomías">
+                        <?php foreach ($taxonomies as $tax): ?>
+                            <option value="tax:<?php echo esc_attr($tax->name); ?>">
+                                <?php echo esc_html($tax->labels->name); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </optgroup>
+                </select>
+            </div>
+        </div>
+
+        <div class="dss-sorter-card" id="dss-sorter-panel" style="display:none;">
+            <div class="dss-sorter-toolbar">
+                <span class="dss-sorter-count" id="dss-sorter-count"></span>
+                <span class="dss-sorter-hint"><span class="dashicons dashicons-move"></span> Arrastra para reordenar</span>
+            </div>
+            <ul class="dss-sortable-list" id="dss-sortable-list"></ul>
+            <div class="dss-sorter-actions">
+                <button type="button" class="button button-primary button-large" id="dss-sorter-save" disabled>
+                    <span class="dashicons dashicons-saved" style="vertical-align:middle;"></span> Guardar Orden
+                </button>
+                <span class="dss-sorter-save-status" id="dss-sorter-status"></span>
+            </div>
         </div>
     </div>
     <?php
 }
 
-// 1. Asegurar soporte para 'page-attributes' (menu_order)
-add_action('init', 'cpt_portfolio_add_support', 99);
-function cpt_portfolio_add_support()
+// ──────────────────────────────────────
+// AJAX: Load items
+// ──────────────────────────────────────
+add_action('wp_ajax_dss_sorter_load', 'dss_sorter_ajax_load');
+function dss_sorter_ajax_load()
 {
-    add_post_type_support('cpt_portfolio', 'page-attributes');
+    check_ajax_referer('dss_sorter_nonce', 'nonce');
+    if (!current_user_can('manage_options'))
+        wp_send_json_error('Sin permisos.');
+
+    $source = sanitize_text_field($_POST['source'] ?? '');
+    if (empty($source))
+        wp_send_json_error('Fuente no especificada.');
+
+    list($type, $slug) = explode(':', $source, 2);
+    $items = array();
+
+    if ($type === 'cpt') {
+        $posts = get_posts(array(
+            'post_type' => $slug,
+            'post_status' => 'publish',
+            'posts_per_page' => 200,
+            'orderby' => 'menu_order',
+            'order' => 'ASC',
+        ));
+        foreach ($posts as $p) {
+            $items[] = array(
+                'id' => $p->ID,
+                'title' => $p->post_title ?: '(Sin título)',
+                'order' => $p->menu_order,
+            );
+        }
+    } elseif ($type === 'tax') {
+        $terms = get_terms(array(
+            'taxonomy' => $slug,
+            'hide_empty' => false,
+            'orderby' => 'meta_value_num',
+            'meta_key' => 'dss_term_order',
+            'order' => 'ASC',
+        ));
+
+        // If no terms have the meta yet, fall back to name order
+        if (is_wp_error($terms)) {
+            $terms = array();
+        }
+
+        $has_order = false;
+        foreach ($terms as $t) {
+            $order = (int) get_term_meta($t->term_id, 'dss_term_order', true);
+            if ($order > 0)
+                $has_order = true;
+            $items[] = array(
+                'id' => $t->term_id,
+                'title' => $t->name,
+                'count' => $t->count,
+                'order' => $order,
+            );
+        }
+
+        if (!$has_order) {
+            // Sort alphabetically as default
+            usort($items, function ($a, $b) {
+                return strcasecmp($a['title'], $b['title']);
+            });
+        }
+    } else {
+        wp_send_json_error('Tipo no válido.');
+    }
+
+    wp_send_json_success(array(
+        'type' => $type,
+        'slug' => $slug,
+        'items' => $items,
+    ));
 }
 
-// 2. Modificar la consulta (Query) tanto en Admin como en Frontend
-add_action('pre_get_posts', 'cpt_portfolio_modify_query_order');
-function cpt_portfolio_modify_query_order($query)
+// ──────────────────────────────────────
+// AJAX: Save order
+// ──────────────────────────────────────
+add_action('wp_ajax_dss_sorter_save', 'dss_sorter_ajax_save');
+function dss_sorter_ajax_save()
 {
+    check_ajax_referer('dss_sorter_nonce', 'nonce');
+    if (!current_user_can('manage_options'))
+        wp_send_json_error('Sin permisos.');
 
-    // Obtenemos el post type actual de la consulta
-    // A veces es un array, a veces un string
-    $current_post_type = $query->get('post_type');
+    $source = sanitize_text_field($_POST['source'] ?? '');
+    $order = isset($_POST['order']) && is_array($_POST['order']) ? array_map('intval', $_POST['order']) : array();
 
-    // Verificación robusta: ¿Estamos consultando 'cpt_portfolio'?
-    $is_cpt_portfolio = ($current_post_type === 'cpt_portfolio') || (is_array($current_post_type) && in_array('cpt_portfolio', $current_post_type));
+    if (empty($source) || empty($order))
+        wp_send_json_error('Datos incompletos.');
 
-    if (!$is_cpt_portfolio) {
-        return;
-    }
+    list($type, $slug) = explode(':', $source, 2);
 
-    // CASO A: Estamos en el panel de Admin (lista de entradas)
-    global $pagenow;
-    if (is_admin() && $pagenow == 'edit.php' && $query->is_main_query()) {
-        $query->set('orderby', 'menu_order');
-        $query->set('order', 'ASC');
-    }
-
-    // CASO B: Estamos en el Frontend (web pública)
-    // Aplicamos a archivos, búsquedas, etc., pero NO en el admin
-    if (!is_admin() && !$query->is_main_query()) {
-        // Opcional: Si quieres que afecte a widgets/bloques secundarios, quita el ! $query->is_main_query()
-        // Por seguridad, solemos aplicarlo a la query principal primero.
-    }
-
-    if (!is_admin()) {
-        $query->set('orderby', 'menu_order');
-        $query->set('order', 'ASC');
-    }
-}
-
-// 3. Encolar Scripts JS para Drag & Drop (Solo en admin edit.php de cpt_portfolio)
-add_action('admin_enqueue_scripts', 'cpt_portfolio_enqueue_scripts');
-function cpt_portfolio_enqueue_scripts($hook)
-{
-    global $post_type;
-
-    if ('edit.php' != $hook || $post_type != 'cpt_portfolio') {
-        return;
-    }
-
-    wp_enqueue_script('jquery-ui-sortable');
-
-    // Script JS inline
-    $script = "
-    jQuery(document).ready(function($) {
-        $('table.wp-list-table tbody').sortable({
-            'items': 'tr',
-            'axis': 'y',
-            'helper': function(e, ui) {
-                ui.children().each(function() { $(this).width($(this).width()); });
-                return ui;
-            },
-            'update': function(e, ui) {
-                $.post( ajaxurl, {
-                    action: 'save_cpt_portfolio_order',
-                    order: $(this).sortable('serialize')
-                });
-            }
-        });
-    });
-    ";
-
-    wp_add_inline_script('jquery-ui-sortable', $script);
-    wp_add_inline_style('wp-admin', 'table.wp-list-table tbody tr { cursor: move; }');
-}
-
-// 4. AJAX para guardar el orden en base de datos
-add_action('wp_ajax_save_cpt_portfolio_order', 'cpt_portfolio_save_order');
-function cpt_portfolio_save_order()
-{
-    if (!current_user_can('edit_posts'))
-        wp_die();
-
-    parse_str($_POST['order'], $data);
-
-    if (is_array($data['post'])) {
-        foreach ($data['post'] as $position => $post_id) {
+    if ($type === 'cpt') {
+        foreach ($order as $position => $post_id) {
             wp_update_post(array(
-                'ID' => (int) $post_id,
-                'menu_order' => $position
+                'ID' => $post_id,
+                'menu_order' => $position,
             ));
         }
+    } elseif ($type === 'tax') {
+        foreach ($order as $position => $term_id) {
+            update_term_meta($term_id, 'dss_term_order', $position);
+        }
+    } else {
+        wp_send_json_error('Tipo no válido.');
     }
-    wp_die();
+
+    if (class_exists('DSS_Notifications')) {
+        DSS_Notifications::get_instance()->add('Orden guardado correctamente.', 'success', 'Content Sorter');
+    }
+
+    wp_send_json_success();
+}
+
+// ──────────────────────────────────────
+// Frontend: Apply CPT order
+// ──────────────────────────────────────
+add_action('pre_get_posts', 'dss_sorter_apply_cpt_order');
+function dss_sorter_apply_cpt_order($query)
+{
+    if (is_admin())
+        return;
+
+    $post_type = $query->get('post_type');
+    if (empty($post_type))
+        return;
+
+    $sortable_types = get_post_types(array('public' => true));
+    unset($sortable_types['attachment']);
+
+    $is_sortable = is_string($post_type) ? isset($sortable_types[$post_type]) : (is_array($post_type) && !empty(array_intersect($post_type, array_keys($sortable_types))));
+
+    if (!$is_sortable)
+        return;
+
+    // Only apply if there are posts with menu_order > 0 for this type
+    if (!$query->get('orderby')) {
+        $query->set('orderby', 'menu_order');
+        $query->set('order', 'ASC');
+    }
+}
+
+// ──────────────────────────────────────
+// Frontend: Apply Taxonomy term order
+// ──────────────────────────────────────
+add_filter('get_terms_defaults', 'dss_sorter_apply_tax_order', 10, 2);
+function dss_sorter_apply_tax_order($defaults, $taxonomies)
+{
+    if (is_admin())
+        return $defaults;
+
+    $public_taxonomies = get_taxonomies(array('public' => true));
+
+    foreach ($taxonomies as $tax) {
+        if (isset($public_taxonomies[$tax])) {
+            $defaults['orderby'] = 'meta_value_num';
+            $defaults['meta_key'] = 'dss_term_order';
+            $defaults['order'] = 'ASC';
+            break;
+        }
+    }
+
+    return $defaults;
+}
+
+// ──────────────────────────────────────
+// Admin list: Apply CPT order in edit.php
+// ──────────────────────────────────────
+add_action('pre_get_posts', 'dss_sorter_admin_cpt_order');
+function dss_sorter_admin_cpt_order($query)
+{
+    if (!is_admin() || !$query->is_main_query())
+        return;
+
+    global $pagenow;
+    if ($pagenow !== 'edit.php')
+        return;
+
+    $post_type = $query->get('post_type');
+    if (empty($post_type))
+        return;
+
+    $query->set('orderby', 'menu_order');
+    $query->set('order', 'ASC');
 }
