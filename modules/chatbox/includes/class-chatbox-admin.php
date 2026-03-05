@@ -91,7 +91,7 @@ class DSS_Chatbox_Admin
 		Sé amable, profesional y conciso. Si no sabes algo, sugiere contactar a v.torres@dssnetwork.es.
 		Habla siempre en español.";
 
-        $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" . $api_key;
+        $url = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=" . $api_key;
 
         $body = array(
             'contents' => array(
