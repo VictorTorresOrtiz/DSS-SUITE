@@ -25,7 +25,7 @@ class DSS_Chatbox_Admin
      */
     public function enqueue_assets()
     {
-        wp_enqueue_style('dss-chatbox-style', DSS_SUITE_PLUGIN_URL . 'modules/chatbox/assets/css/chatbox.css', array(), DSS_CHATBOX_VERSION);
+        wp_enqueue_style('dss-chatbox-style', DSS_SUITE_PLUGIN_URL . 'modules/chatbox/assets/css/chatbox.css', array('dashicons'), DSS_CHATBOX_VERSION);
         wp_enqueue_script('dss-chatbox-script', DSS_SUITE_PLUGIN_URL . 'modules/chatbox/assets/js/chatbox.js', array('jquery'), DSS_CHATBOX_VERSION, true);
 
         wp_localize_script('dss-chatbox-script', 'dssChatbox', array(
