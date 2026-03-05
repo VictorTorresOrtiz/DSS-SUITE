@@ -175,15 +175,18 @@ class DSS_Suite_Core
             array($this, 'render_settings_page')
         );
 
-        // Submenu: IA y Licencia (Global Settings)
-        add_submenu_page(
-            'dss-suite',
-            'IA y Licencia',
-            'IA y Licencia',
-            'manage_options',
-            'dss-suite-ai',
-            array($this, 'render_ai_settings_page')
-        );
+        // Submenu: IA y Licencia (only if Chatbox module is active)
+        $active_modules = get_option('dss_suite_active_modules', array());
+        if (!empty($active_modules['chatbox']) && $active_modules['chatbox'] === '1') {
+            add_submenu_page(
+                'dss-suite',
+                'IA y Licencia',
+                'IA y Licencia',
+                'manage_options',
+                'dss-suite-ai',
+                array($this, 'render_ai_settings_page')
+            );
+        }
     }
 
     /**
