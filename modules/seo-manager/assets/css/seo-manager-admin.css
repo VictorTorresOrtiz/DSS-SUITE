@@ -74,3 +74,213 @@
     font-weight: 600;
     text-transform: uppercase;
 }
+
+/* Tabs */
+.dss-seo-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 25px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.dss-seo-tab {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 20px;
+    text-decoration: none;
+    color: #64748b;
+    font-weight: 500;
+    font-size: 14px;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.2s;
+}
+
+.dss-seo-tab:hover {
+    color: #2271b1;
+}
+
+.dss-seo-tab:focus {
+    box-shadow: none;
+    outline: none;
+}
+
+.dss-seo-tab.active {
+    color: #2271b1;
+    border-bottom-color: #2271b1;
+    font-weight: 600;
+}
+
+.dss-seo-tab .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+/* Audit */
+.dss-audit-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.dss-audit-status {
+    color: #64748b;
+    font-size: 14px;
+}
+
+.dss-audit-page {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    overflow: hidden;
+}
+
+.dss-audit-page-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.dss-audit-page-header.success {
+    border-left: 3px solid #22c55e;
+}
+
+.dss-audit-page-header.success .dashicons {
+    color: #22c55e;
+}
+
+.dss-audit-page-header.warning {
+    border-left: 3px solid #f59e0b;
+}
+
+.dss-audit-page-header.warning .dashicons:first-child {
+    color: #f59e0b;
+}
+
+.dss-audit-page-header.error {
+    border-left: 3px solid #ef4444;
+}
+
+.dss-audit-page-header.error .dashicons:first-child {
+    color: #ef4444;
+}
+
+.dss-audit-type-badge {
+    background: #f1f5f9;
+    color: #94a3b8;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-left: auto;
+}
+
+.dss-audit-link {
+    color: #94a3b8;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.dss-audit-link:hover {
+    color: #2271b1;
+}
+
+.dss-audit-link .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+}
+
+.dss-audit-page-body {
+    padding: 14px 16px;
+}
+
+.dss-audit-issues {
+    list-style: none;
+    margin: 0 0 15px;
+    padding: 0;
+}
+
+.dss-audit-issues li {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 6px 0;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.dss-issue-error {
+    color: #dc2626;
+}
+
+.dss-issue-warning {
+    color: #d97706;
+}
+
+.dss-audit-issues .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.dss-audit-tree-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    margin: 0 0 8px;
+}
+
+.dss-heading-tree {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.dss-heading-tree li {
+    padding: 4px 0;
+    font-size: 13px;
+    color: #475569;
+    line-height: 1.5;
+}
+
+.dss-heading-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-family: monospace;
+    min-width: 28px;
+    text-align: center;
+}
+
+.dss-tag-h1 { background: #fee2e2; color: #dc2626; }
+.dss-tag-h2 { background: #fef3c7; color: #d97706; }
+.dss-tag-h3 { background: #dbeafe; color: #2563eb; }
+.dss-tag-h4 { background: #e0e7ff; color: #4f46e5; }
+.dss-tag-h5 { background: #ede9fe; color: #7c3aed; }
+.dss-tag-h6 { background: #f1f5f9; color: #64748b; }
+
+.dss-audit-clean {
+    color: #16a34a;
+    font-size: 13px;
+    margin: 0;
+}
+
+.dss-audit-error {
+    color: #ef4444;
+    font-size: 13px;
+}
