@@ -123,10 +123,10 @@ $hide_updates = get_option('ctb_hide_updates');
                 <h2><span class="dashicons dashicons-shield-alt"></span> Control Avanzado</h2>
             </div>
             <div class="dss-card-body">
-                <div class="dss-form-group">
+                <div class="dss-form-group" style="margin-bottom: 30px;">
                     <label class="dss-switch-container">
                         <span class="dss-switch">
-                            <input type="checkbox" name="ctb_hide_updates" value="1" <?php checked($hide_updates, '1'); ?>>
+                            <input type="checkbox" name="ctb_hide_updates" value="1" <?php checked(get_option('ctb_hide_updates'), '1'); ?>>
                             <span class="dss-slider"></span>
                         </span>
                         <span class="dss-switch-label">Ocultar todas las notificaciones de actualización (Core, Plugins
@@ -134,6 +134,18 @@ $hide_updates = get_option('ctb_hide_updates');
                     </label>
                     <p class="dss-help-text" style="margin-left: 56px;">Activa esta opción si quieres evitar que tus
                         clientes vean avisos de actualizaciones pendientes.</p>
+                </div>
+
+                <div class="dss-form-group">
+                    <label class="dss-switch-container">
+                        <span class="dss-switch">
+                            <input type="checkbox" name="ctb_hide_notices" value="1" <?php checked(get_option('ctb_hide_notices'), '1'); ?>>
+                            <span class="dss-slider"></span>
+                        </span>
+                        <span class="dss-switch-label">Ocultar todas las notificaciones del panel (Admin Notices)</span>
+                    </label>
+                    <p class="dss-help-text" style="margin-left: 56px;">Activa esta opción para eliminar avisos, alertas
+                        y banners de plugins o del propio WordPress en el escritorio.</p>
                 </div>
             </div>
         </div>
