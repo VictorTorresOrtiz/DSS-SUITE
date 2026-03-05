@@ -86,7 +86,10 @@ class DSS_Chatbox_Admin
         }
 
         // System Prompt
-        $system_prompt = "Asistente experto de DSS NETWORK (https://dssnetwork.es). Soporte WordPress y técnico. Sé amable, conciso y profesional. Si dudas, sugiere: v.torres@dssnetwork.es. Idioma: Español.";
+        $system_prompt = "Asistente experto de soporte para DSS NETWORK (https://dssnetwork.es). 
+        Tu objetivo es ayudar a los clientes con dudas sobre WordPress, servicios de DSS y soporte técnico. 
+        Sé amable, profesional y proporciona respuestas completas y detalladas. 
+        Si no estás seguro de algo, sugiere contactar a v.torres@dssnetwork.es. Idioma: Español.";
 
         // --- FASE DE DESCUBRIMIENTO DE MODELO ---
         // Consultamos qué modelos están disponibles exactamente para esta API Key
@@ -128,7 +131,7 @@ class DSS_Chatbox_Admin
                 ),
                 'generationConfig' => array(
                     'temperature' => 0.7,
-                    'maxOutputTokens' => 500
+                    'maxOutputTokens' => 1024
                 )
             );
 
