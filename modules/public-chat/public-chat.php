@@ -22,3 +22,5 @@ function dss_public_chat_init()
     new DSS_Public_Chat_Admin();
 }
 add_action('init', 'dss_public_chat_init');
+
+//TODO: Mejorar el chat publico, crear los addons default y que vaya alternando
