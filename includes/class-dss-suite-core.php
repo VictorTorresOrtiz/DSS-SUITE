@@ -227,6 +227,7 @@ class DSS_Suite_Core
 
         if (isset($_GET['settings-updated'])) {
             add_settings_error('dss_suite_messages', 'dss_suite_message', __('Settings Saved', 'dss-suite'), 'updated');
+            DSS_Notifications::get_instance()->add_persistent('Los módulos de la suite se han actualizado correctamente.', 'success', 'Ajustes Guardados');
         }
 
         if (isset($_GET['unlocked'])) {

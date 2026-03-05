@@ -69,6 +69,9 @@ class DSS_Theme_Branding
 
     public function settings_page_html()
     {
+        if (isset($_GET['settings-updated'])) {
+            DSS_Notifications::get_instance()->add_persistent('La identidad visual del tema se ha actualizado correctamente.', 'success', 'Marca Guardada');
+        }
         require_once DSS_WHITE_LABEL_PLUGIN_DIR . 'admin/views/view-settings-page.php';
     }
 
