@@ -59,7 +59,20 @@ class DSS_Suite_Core
         add_action('admin_menu', array($this, 'register_admin_menu'));
         add_action('admin_init', array($this, 'register_settings'));
         add_action('admin_init', array($this, 'handle_panel_unlock'));
+        add_action('admin_head', array($this, 'suppress_default_notices'));
         $this->load_modules();
+    }
+
+    /**
+     * Suppress default WP admin notices on DSS Suite pages.
+     */
+    public function suppress_default_notices()
+    {
+        $screen = get_current_screen();
+        if ($screen && (strpos($screen->id, 'dss-suite') !== false || strpos($screen->id, 'custom-theme-branding') !== false)) {
+            remove_all_actions('admin_notices');
+            remove_all_actions('all_admin_notices');
+        }
     }
 
     /**
@@ -226,16 +239,15 @@ class DSS_Suite_Core
         $active_modules = get_option('dss_suite_active_modules', array());
 
         if (isset($_GET['settings-updated'])) {
-            add_settings_error('dss_suite_messages', 'dss_suite_message', __('Settings Saved', 'dss-suite'), 'updated');
+            // Eliminamos add_settings_error para que no aparezca el aviso nativo
             DSS_Notifications::get_instance()->add_persistent('Los módulos de la suite se han actualizado correctamente.', 'success', 'Ajustes Guardados');
         }
 
         if (isset($_GET['unlocked'])) {
-            add_settings_error('dss_suite_messages', 'dss_auth_success', 'Panel desbloqueado correctamente.', 'updated');
             DSS_Notifications::get_instance()->add('¡Bienvenido! El panel de DSS Suite se ha desbloqueado correctamente.', 'success', 'Acceso Concedido');
         }
 
-        settings_errors('dss_suite_messages');
+        // Ya no llamamos a settings_errors('dss_suite_messages') para evitar el aviso por defecto
         ?>
         <div class="wrap">
             <h1>DSS Suite - Panel de Control</h1>
