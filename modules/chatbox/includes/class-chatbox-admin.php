@@ -131,45 +131,51 @@ class DSS_Chatbox_Admin
         }
 
         // Definición de herramientas (Tools) para Gemini
-        $tools = array(
+        $function_declarations = array(
             array(
-                'function_declarations' => array(
-                    array(
-                        'name' => 'create_wp_post',
-                        'description' => 'Crea una nueva entrada (blog post) en WordPress.',
-                        'parameters' => array(
-                            'type' => 'object',
-                            'properties' => array(
-                                'title' => array('type' => 'string', 'description' => 'El título de la entrada.'),
-                                'content' => array('type' => 'string', 'description' => 'El contenido detallado de la entrada en formato HTML o texto plano.'),
-                            ),
-                            'required' => array('title', 'content')
-                        )
+                'name' => 'create_wp_post',
+                'description' => 'Crea una nueva entrada (blog post) en WordPress.',
+                'parameters' => array(
+                    'type' => 'object',
+                    'properties' => array(
+                        'title' => array('type' => 'string', 'description' => 'El título de la entrada.'),
+                        'content' => array('type' => 'string', 'description' => 'El contenido detallado de la entrada en formato HTML o texto plano.'),
                     ),
-                    array(
-                        'name' => 'create_wc_product',
-                        'description' => 'Crea un nuevo producto en WooCommerce.',
-                        'parameters' => array(
-                            'type' => 'object',
-                            'properties' => array(
-                                'name' => array('type' => 'string', 'description' => 'Nombre del producto.'),
-                                'price' => array('type' => 'string', 'description' => 'Precio del producto (solo el número).'),
-                                'description' => array('type' => 'string', 'description' => 'Descripción del producto.')
-                            ),
-                            'required' => array('name', 'price')
-                        )
+                    'required' => array('title', 'content')
+                )
+            )
+        );
+
+        // Añadir herramientas de WooCommerce solo si está activo
+        if (class_exists('WooCommerce')) {
+            $function_declarations[] = array(
+                'name' => 'create_wc_product',
+                'description' => 'Crea un nuevo producto en WooCommerce.',
+                'parameters' => array(
+                    'type' => 'object',
+                    'properties' => array(
+                        'name' => array('type' => 'string', 'description' => 'Nombre del producto.'),
+                        'price' => array('type' => 'string', 'description' => 'Precio del producto (solo el número).'),
+                        'description' => array('type' => 'string', 'description' => 'Descripción del producto.')
                     ),
-                    array(
-                        'name' => 'get_store_report',
-                        'description' => 'Obtiene un resumen de ventas, productos más vendidos y stock bajo de WooCommerce.',
-                        'parameters' => array(
-                            'type' => 'object',
-                            'properties' => array(
-                                'period' => array('type' => 'string', 'description' => 'Periodo del reporte: today, week, month.', 'enum' => array('today', 'week', 'month'))
-                            )
-                        )
+                    'required' => array('name', 'price')
+                )
+            );
+            $function_declarations[] = array(
+                'name' => 'get_store_report',
+                'description' => 'Obtiene un resumen de ventas, productos más vendidos y stock bajo de WooCommerce.',
+                'parameters' => array(
+                    'type' => 'object',
+                    'properties' => array(
+                        'period' => array('type' => 'string', 'description' => 'Periodo del reporte: today, week, month.', 'enum' => array('today', 'week', 'month'))
                     )
                 )
+            );
+        }
+
+        $tools = array(
+            array(
+                'function_declarations' => $function_declarations
             )
         );
 
