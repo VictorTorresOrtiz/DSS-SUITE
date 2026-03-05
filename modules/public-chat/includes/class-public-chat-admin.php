@@ -207,7 +207,8 @@ class DSS_Public_Chat_Admin
                 </div>
                 <div id="dss-public-chat-history" class="dss-public-chat-body">
                     <div class="dss-message dss-bot-message">¡Hola! Soy tu asistente de
-                        <?php echo esc_html(get_bloginfo('name')); ?>. ¿En qué puedo ayudarte?</div>
+                        <?php echo esc_html(get_bloginfo('name')); ?>. ¿En qué puedo ayudarte?
+                    </div>
 
                     <?php if (!empty($shortcuts)): ?>
                         <div class="dss-suggestion-chips">
@@ -317,20 +318,27 @@ class DSS_Public_Chat_Admin
             ));
 
             if (!is_wp_error($response)) {
+                $code = wp_remote_retrieve_response_code($response);
                 $res_body = wp_remote_retrieve_body($response);
                 $data = json_decode($res_body, true);
 
                 if (isset($data['candidates'][0]['content']['parts'][0]['text'])) {
                     $reply = $data['candidates'][0]['content']['parts'][0]['text'];
                     break;
+                } elseif (isset($data['error']['message'])) {
+                    $last_error = $data['error']['message'];
+                } else {
+                    $last_error = "Error HTTP $code: " . substr($res_body, 0, 100);
                 }
+            } else {
+                $last_error = $response->get_error_message();
             }
         }
 
         if (!empty($reply)) {
             wp_send_json_success(array('reply' => $reply));
         } else {
-            wp_send_json_error(array('message' => 'No se pudo obtener respuesta de la IA.'));
+            wp_send_json_error(array('message' => 'No se pudo obtener respuesta de la IA. Detalle: ' . $last_error));
         }
     }
 }
