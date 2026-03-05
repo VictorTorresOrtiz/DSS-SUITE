@@ -78,6 +78,17 @@ jQuery(document).ready(function ($) {
     });
   });
 
+  // Handle Suggestion Chips
+  $(".dss-chip").on("click", function () {
+    const query = $(this).data("query");
+    $textarea.val(query).focus();
+
+    // Si la consulta es una pregunta directa, enviar automáticamente
+    if (query.endsWith("?")) {
+      $form.trigger("submit");
+    }
+  });
+
   // Submit on Enter (but new line on Shift+Enter)
   $textarea.on("keydown", function (e) {
     if (e.key === "Enter" && !e.shiftKey) {

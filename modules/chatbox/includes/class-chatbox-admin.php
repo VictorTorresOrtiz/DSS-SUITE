@@ -54,6 +54,12 @@ class DSS_Chatbox_Admin
                         ¡Hola! Soy el asistente de DSS NETWORK. ¿En qué puedo ayudarte hoy?
                     </div>
                 </div>
+                <!-- Suggestion Chips -->
+                <div class="dss-suggestion-chips">
+                    <button class="dss-chip" data-query="Crea una entrada de blog sobre ">📝 Crear Entrada</button>
+                    <button class="dss-chip" data-query="Crea un producto llamado ">🛍️ Crear Producto</button>
+                    <button class="dss-chip" data-query="¿Cómo puedo optimizar mi sitio?">🚀 Optimizar Sitio</button>
+                </div>
                 <div class="dss-chatbox-footer">
                     <form id="dss-chatbox-form">
                         <textarea name="chat_message" placeholder="Escribe tu duda aquí..." required></textarea>
