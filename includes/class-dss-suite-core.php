@@ -24,7 +24,7 @@ class DSS_Suite_Core
         'seo-manager' => array(
             'name' => 'SEO Manager',
             'description' => 'Cambia etiquetas HTML y añade clases personalizadas.',
-            'file' => 'seo-manager/tagmanager.php',
+            'file' => 'seo-manager/seo-manager.php',
         ),
         'white-label' => array(
             'name' => 'Widget & Theme controller',
