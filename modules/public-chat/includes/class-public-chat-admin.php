@@ -186,8 +186,7 @@ class DSS_Public_Chat_Admin
         ?>
         <div id="dss-public-chat-container">
             <div id="dss-public-chat-button">
-                <img src="<?php echo esc_url($logo_url); ?>" alt="Chat Icon"
-                    style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                <span class="dashicons dashicons-format-chat"></span>
             </div>
             <div id="dss-public-chat-window" style="display: none;">
                 <div class="dss-public-chat-header">
@@ -198,8 +197,7 @@ class DSS_Public_Chat_Admin
                 </div>
                 <div id="dss-public-chat-history" class="dss-public-chat-body">
                     <div class="dss-message dss-bot-message">¡Hola! Soy tu asistente de
-                        <?php echo esc_html(get_bloginfo('name')); ?>. ¿En qué puedo ayudarte?
-                    </div>
+                        <?php echo esc_html(get_bloginfo('name')); ?>. ¿En qué puedo ayudarte?</div>
 
                     <?php if (!empty($shortcuts)): ?>
                         <div class="dss-suggestion-chips">
