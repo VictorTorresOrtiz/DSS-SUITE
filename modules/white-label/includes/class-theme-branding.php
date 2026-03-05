@@ -29,6 +29,12 @@ class DSS_Theme_Branding
         if (get_option('ctb_hide_notices') === '1') {
             add_action('admin_head', array($this, 'suppress_admin_notices'), 1);
         }
+
+        // SVG Upload Support
+        if (get_option('ctb_allow_svg') === '1') {
+            add_filter('upload_mimes', array($this, 'allow_svg_uploads'));
+            add_filter('wp_check_filetype_and_ext', array($this, 'fix_svg_filetype'), 10, 4);
+        }
     }
 
     public function enqueue_branding_assets($hook)
@@ -65,6 +71,7 @@ class DSS_Theme_Branding
         register_setting('ctb_settings_group', 'ctb_footer_text');
         register_setting('ctb_settings_group', 'ctb_hide_updates');
         register_setting('ctb_settings_group', 'ctb_hide_notices');
+        register_setting('ctb_settings_group', 'ctb_allow_svg');
     }
 
     public function settings_page_html()
@@ -173,5 +180,28 @@ class DSS_Theme_Branding
         remove_all_actions('admin_notices');
         remove_all_actions('all_admin_notices');
         remove_all_actions('user_admin_notices');
+    }
+
+    /**
+     * Allow SVG in WordPress media uploads.
+     */
+    public function allow_svg_uploads($mimes)
+    {
+        $mimes['svg']  = 'image/svg+xml';
+        $mimes['svgz'] = 'image/svg+xml';
+        return $mimes;
+    }
+
+    /**
+     * Fix filetype check for SVG (WordPress blocks it by default).
+     */
+    public function fix_svg_filetype($data, $file, $filename, $mimes)
+    {
+        $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+        if (in_array($ext, array('svg', 'svgz'))) {
+            $data['ext']  = $ext;
+            $data['type'] = 'image/svg+xml';
+        }
+        return $data;
     }
 }

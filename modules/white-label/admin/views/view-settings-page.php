@@ -147,6 +147,17 @@ $hide_updates = get_option('ctb_hide_updates');
                     <p class="dss-help-text" style="margin-left: 56px;">Activa esta opción para eliminar avisos, alertas
                         y banners de plugins o del propio WordPress en el escritorio.</p>
                 </div>
+
+                <div class="dss-form-group">
+                    <label class="dss-switch-container">
+                        <span class="dss-switch">
+                            <input type="checkbox" name="ctb_allow_svg" value="1" <?php checked(get_option('ctb_allow_svg'), '1'); ?>>
+                            <span class="dss-slider"></span>
+                        </span>
+                        <span class="dss-switch-label">Permitir subida de archivos SVG</span>
+                    </label>
+                    <p class="dss-help-text" style="margin-left: 56px;">Habilita la subida de imágenes en formato SVG y SVGZ a la biblioteca de medios.</p>
+                </div>
             </div>
         </div>
 
