@@ -1,0 +1,184 @@
+/* CSS for Public Frontend Chatbot */
+#dss-public-chat-container {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 999999;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+#dss-public-chat-button {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #0073aa 0%, #005177 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 115, 170, 0.4);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+#dss-public-chat-button:hover {
+    transform: scale(1.1) rotate(5deg);
+    box-shadow: 0 6px 20px rgba(0, 115, 170, 0.6);
+}
+
+#dss-public-chat-button span {
+    font-size: 30px;
+}
+
+#dss-public-chat-window {
+    position: absolute;
+    bottom: 80px;
+    right: 0;
+    width: 380px;
+    height: 600px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: dssFadeInUp 0.4s ease forwards;
+}
+
+@keyframes dssFadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.dss-public-chat-header {
+    padding: 20px;
+    background: #0073aa;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.dss-public-chat-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    flex: 1;
+}
+
+#dss-public-chat-close {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.dss-public-chat-body {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    background: #f9f9f9;
+}
+
+.dss-message {
+    max-width: 85%;
+    padding: 12px 16px;
+    border-radius: 15px;
+    font-size: 14px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.dss-bot-message {
+    background: #fff;
+    color: #333;
+    align-self: flex-start;
+    border-bottom-left-radius: 2px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.dss-user-message {
+    background: #0073aa;
+    color: #fff;
+    align-self: flex-end;
+    border-bottom-right-radius: 2px;
+}
+
+.dss-public-chat-footer {
+    padding: 15px;
+    background: #fff;
+    border-top: 1px solid #eee;
+}
+
+#dss-public-chat-form {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+}
+
+#dss-public-chat-form textarea {
+    flex: 1;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 10px;
+    height: 40px;
+    resize: none;
+    font-size: 14px;
+    outline: none;
+}
+
+.dss-upload-label {
+    cursor: pointer;
+    color: #0073aa;
+    padding: 8px;
+    border-radius: 50%;
+    transition: background 0.2s;
+}
+
+.dss-upload-label:hover {
+    background: #f0f0f0;
+}
+
+#dss-public-chat-send {
+    width: 40px;
+    height: 40px;
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+/* Shortcuts */
+.dss-suggestion-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 5px;
+}
+
+.dss-chip {
+    background: #fff;
+    border: 1px solid #0073aa;
+    color: #0073aa;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.dss-chip:hover {
+    background: #0073aa;
+    color: #fff;
+}

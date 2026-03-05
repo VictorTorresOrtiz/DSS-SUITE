@@ -24,3 +24,5 @@ function dss_chatbox_init()
     }
 }
 add_action('init', 'dss_chatbox_init');
+
+//TODO: Responsive en movil

@@ -40,6 +40,11 @@ class DSS_Suite_Core
             'name' => 'Chatbox de Soporte',
             'description' => 'Añade un chatbox moderno en el área de administración para consultas de clientes.',
             'file' => 'chatbox/chatbox.php',
+        ),
+        'public-chat' => array(
+            'name' => 'Chat Público (Web)',
+            'description' => 'Chatbot flotante para la parte pública con soporte de fotos y prompts personalizados.',
+            'file' => 'public-chat/public-chat.php',
         )
     );
 
