@@ -1,0 +1,76 @@
+.dss-seo-container {
+    max-width: 1000px;
+    margin: 20px 0;
+}
+
+.dss-seo-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
+}
+
+.dss-seo-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.dss-seo-header h1 {
+    margin: 0;
+    font-size: 24px;
+    color: #1e293b;
+}
+
+.dss-seo-table th {
+    background: #f8fafc;
+    padding: 15px !important;
+    font-weight: 600;
+    color: #64748b;
+    border-bottom: 2px solid #e2e8f0 !important;
+}
+
+.dss-seo-table td {
+    padding: 12px 15px !important;
+    vertical-align: middle;
+    border-bottom: 1px solid #f1f5f9 !important;
+}
+
+.dss-seo-input {
+    width: 100%;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 6px !important;
+    padding: 10px 12px !important;
+    font-size: 14px !important;
+    transition: all 0.2s;
+    background: #fff !important;
+}
+
+.dss-seo-input:focus {
+    border-color: #2271b1 !important;
+    box-shadow: 0 0 0 3px rgba(34, 113, 177, 0.1) !important;
+    outline: none;
+}
+
+.remove-row {
+    color: #ef4444;
+    cursor: pointer;
+    transition: transform 0.2s;
+    font-size: 20px;
+}
+
+.remove-row:hover {
+    transform: scale(1.1);
+}
+
+.dss-badge {
+    background: #e0f2fe;
+    color: #0369a1;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}

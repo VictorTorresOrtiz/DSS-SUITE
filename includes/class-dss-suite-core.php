@@ -24,7 +24,7 @@ class DSS_Suite_Core
         'seo-manager' => array(
             'name' => 'SEO Manager',
             'description' => 'Cambia etiquetas HTML y añade clases personalizadas.',
-            'file' => 'seo-manager/tagmanager.php',
+            'file' => 'seo-manager/seo-manager.php',
         ),
         'white-label' => array(
             'name' => 'Widget & Theme controller',
@@ -37,9 +37,14 @@ class DSS_Suite_Core
             'file' => 'cpt-sorter/function.php',
         ),
         'chatbox' => array(
-            'name' => 'Chatbox de Soporte',
+            'name' => 'Chatbox de Soporte (Premium)',
             'description' => 'Añade un chatbox moderno en el área de administración para consultas de clientes.',
             'file' => 'chatbox/chatbox.php',
+        ),
+        'public-chat' => array(
+            'name' => 'Chat Público Beta (Premium)',
+            'description' => 'Chatbot flotante para la parte pública con soporte de fotos y prompts personalizados.',
+            'file' => 'public-chat/public-chat.php',
         )
     );
 
@@ -61,14 +66,35 @@ class DSS_Suite_Core
      */
     public function register_admin_menu()
     {
+        // Main Parent Menu
         add_menu_page(
             'DSS Suite',
             'DSS Suite',
             'manage_options',
             'dss-suite',
             array($this, 'render_settings_page'),
-            'dashicons-admin-generic', // Optional icon
+            'dashicons-admin-generic',
             65
+        );
+
+        // Submenu: Panel de Control (Module Activation)
+        add_submenu_page(
+            'dss-suite',
+            'Panel de Control',
+            'Panel de Control',
+            'manage_options',
+            'dss-suite',
+            array($this, 'render_settings_page')
+        );
+
+        // Submenu: IA y Licencia (Global Settings)
+        add_submenu_page(
+            'dss-suite',
+            'IA y Licencia',
+            'IA y Licencia',
+            'manage_options',
+            'dss-suite-ai',
+            array($this, 'render_ai_settings_page')
         );
     }
 
@@ -79,6 +105,7 @@ class DSS_Suite_Core
     {
         register_setting('dss_suite_options_group', 'dss_suite_active_modules');
         register_setting('dss_suite_options_group', 'dss_suite_gemini_api_key');
+        register_setting('dss_suite_options_group', 'dss_suite_invoice_number');
     }
 
     /**
@@ -111,7 +138,6 @@ class DSS_Suite_Core
 
         $active_modules = get_option('dss_suite_active_modules', array());
 
-        // Show success message if saved
         if (isset($_GET['settings-updated'])) {
             add_settings_error('dss_suite_messages', 'dss_suite_message', __('Settings Saved', 'dss-suite'), 'updated');
         }
@@ -119,9 +145,7 @@ class DSS_Suite_Core
         settings_errors('dss_suite_messages');
         ?>
         <div class="wrap">
-            <h1>
-                <?php echo esc_html(get_admin_page_title()); ?> - Centro de Control
-            </h1>
+            <h1>DSS Suite - Panel de Control</h1>
             <p>Activa o desactiva los módulos que deseas utilizar en este sitio.</p>
 
             <form action="options.php" method="post">
@@ -145,50 +169,74 @@ class DSS_Suite_Core
                                             value="1" <?php checked($is_checked, true); ?>>
                                     </label>
                                 </td>
-                                <td><strong>
-                                        <?php echo esc_html($module['name']); ?>
-                                    </strong></td>
-                                <td>
-                                    <?php echo esc_html($module['description']); ?>
-                                </td>
+                                <td><strong><?php echo esc_html($module['name']); ?></strong></td>
+                                <td><?php echo esc_html($module['description']); ?></td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
                 </table>
 
-                <div style="margin-top: 30px; padding: 20px; background: #fff; border: 1px solid #ccd0d4; border-radius: 4px;">
-                    <h2>Configuración de IA (Gemini)</h2>
-                    <p>Introduce tu API Key de Google AI Studio para habilitar el bot de soporte inteligente.</p>
+                <?php submit_button('Guardar Cambios'); ?>
+            </form>
+        </div>
+        <?php
+        $this->render_admin_styles();
+    }
+
+    /**
+     * Render the AI & License Settings Page.
+     */
+    public function render_ai_settings_page()
+    {
+        if (!current_user_can('manage_options')) {
+            return;
+        }
+        ?>
+        <div class="wrap">
+            <h1>DSS Suite - IA y Licencia</h1>
+            <p>Configuración global de inteligencia artificial y credenciales premium.</p>
+
+            <form action="options.php" method="post">
+                <?php settings_fields('dss_suite_options_group'); ?>
+
+                <div style="margin-top: 20px; padding: 25px; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                    <h2 style="margin-top:0;">Configuración de Gemini</h2>
                     <table class="form-table">
                         <tr>
-                            <th scope="row"><label for="dss_suite_gemini_api_key">Gemini API Key</label></th>
+                            <th scope="row"><label for="dss_suite_gemini_api_key">API Key</label></th>
                             <td>
                                 <input type="password" name="dss_suite_gemini_api_key" id="dss_suite_gemini_api_key"
                                     value="<?php echo esc_attr(get_option('dss_suite_gemini_api_key')); ?>"
                                     class="regular-text">
-                                <p class="description">Puedes obtener una clave gratuita en <a
-                                        href="https://aistudio.google.com/" target="_blank">Google AI Studio</a>.</p>
+                                <p class="description">Obtén tu clave en <a href="https://aistudio.google.com/" target="_blank">Google AI Studio</a>.</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="dss_suite_invoice_number">Número de Factura</label></th>
+                            <td>
+                                <input type="text" name="dss_suite_invoice_number" id="dss_suite_invoice_number"
+                                    value="<?php echo esc_attr(get_option('dss_suite_invoice_number')); ?>"
+                                    class="regular-text">
+                                <p class="description">Asocia tu licencia para soporte técnico avanzado.</p>
                             </td>
                         </tr>
                     </table>
                 </div>
 
-                <?php submit_button('Guardar Cambios'); ?>
+                <?php submit_button('Guardar Ajustes'); ?>
             </form>
         </div>
+        <?php
+        $this->render_admin_styles();
+    }
 
-        <!-- Optional: Add some inline styles for a nicer toggle or UI -->
+    /**
+     * Helper to render common admin styles.
+     */
+    private function render_admin_styles()
+    {
+        ?>
         <style>
-            .wrap h1 {
-                margin-bottom: 20px;
-            }
-
-            .wp-list-table th,
-            .wp-list-table td {
-                vertical-align: middle;
-            }
-
-            /* Basic CSS for a toggle switch */
             .dss-switch input[type=checkbox] {
                 width: 40px;
                 height: 20px;
@@ -201,12 +249,7 @@ class DSS_Suite_Core
                 position: relative;
                 cursor: pointer;
             }
-
-            .dss-switch input:checked[type=checkbox] {
-                background: #2271b1;
-                /* WP Blue */
-            }
-
+            .dss-switch input:checked[type=checkbox] { background: #2271b1; }
             .dss-switch input[type=checkbox]:before {
                 content: '';
                 position: absolute;
@@ -220,10 +263,7 @@ class DSS_Suite_Core
                 box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
                 transition: 0.5s;
             }
-
-            .dss-switch input:checked[type=checkbox]:before {
-                left: 20px;
-            }
+            .dss-switch input:checked[type=checkbox]:before { left: 20px; }
         </style>
         <?php
     }

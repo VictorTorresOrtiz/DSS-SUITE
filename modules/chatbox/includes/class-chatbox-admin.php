@@ -18,6 +18,7 @@ class DSS_Chatbox_Admin
         add_action('admin_enqueue_scripts', array($this, 'enqueue_assets'));
         add_action('admin_footer', array($this, 'render_chatbox'));
         add_action('wp_ajax_dss_send_chatbox_inquiry', array($this, 'handle_chat_inquiry'));
+        add_action('admin_menu', array($this, 'add_menu_page'));
     }
 
     /**
@@ -25,6 +26,9 @@ class DSS_Chatbox_Admin
      */
     public function enqueue_assets()
     {
+        if (!current_user_can('manage_options')) {
+            return;
+        }
         wp_enqueue_style('dss-chatbox-style', DSS_SUITE_PLUGIN_URL . 'modules/chatbox/assets/css/chatbox.css', array('dashicons'), DSS_CHATBOX_VERSION);
         wp_enqueue_script('dss-chatbox-script', DSS_SUITE_PLUGIN_URL . 'modules/chatbox/assets/js/chatbox.js', array('jquery'), DSS_CHATBOX_VERSION, true);
 
@@ -39,6 +43,9 @@ class DSS_Chatbox_Admin
      */
     public function render_chatbox()
     {
+        if (!current_user_can('manage_options')) {
+            return;
+        }
         ?>
         <div id="dss-chatbox-container">
             <div id="dss-chatbox-button">
@@ -85,11 +92,56 @@ class DSS_Chatbox_Admin
     }
 
     /**
+     * Add sub-menu to DSS Suite.
+     */
+    public function add_menu_page()
+    {
+        add_submenu_page(
+            'dss-suite',
+            'Chatbox de Soporte',
+            'Chatbox IA',
+            'manage_options',
+            'dss-chatbox-settings',
+            array($this, 'render_settings_page')
+        );
+    }
+
+    /**
+     * Render the settings/info page for Chatbox.
+     */
+    public function render_settings_page()
+    {
+        if (!current_user_can('manage_options')) {
+            return;
+        }
+        ?>
+        <div class="wrap">
+            <h1><span class="dashicons dashicons-format-chat" style="font-size: 28px; width: 28px; height: 28px;"></span> Chatbox de Soporte Inteligente</h1>
+            <p>Este módulo añade un asistente virtual en todas las páginas de administración de WordPress.</p>
+            
+            <div style="background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); max-width: 800px; margin-top: 20px;">
+                <h2>Instrucciones de uso</h2>
+                <ul>
+                    <li>El chatbox aparece automáticamente en la esquina inferior derecha.</li>
+                    <li>Utiliza el botón flotante para abrir el asistente.</li>
+                    <li>Puedes pedirle que cree entradas, productos o que te dé un resumen de ventas.</li>
+                    <li><strong>Nota:</strong> Los ajustes de la API Key se configuran globalmente en <a href="<?php echo admin_url('admin.php?page=dss-suite-ai'); ?>">IA y Licencia</a>.</li>
+                </ul>
+            </div>
+        </div>
+        <?php
+    }
+
+    /**
      * Handle AJAX chat inquiry with Gemini AI.
      */
     public function handle_chat_inquiry()
     {
         check_ajax_referer('dss_chatbox_nonce', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(array('message' => 'Permisos insuficientes.'));
+        }
 
         $message = isset($_POST['chat_message']) ? sanitize_textarea_field($_POST['chat_message']) : '';
         $api_key = get_option('dss_suite_gemini_api_key');
@@ -103,8 +155,10 @@ class DSS_Chatbox_Admin
         }
 
         // System Prompt
+        $invoice_number = get_option('dss_suite_invoice_number', 'N/A');
         $system_prompt = "Asistente experto de soporte para DSS NETWORK (https://dssnetwork.es). 
         Tu objetivo es ayudar a los clientes con dudas sobre WordPress, servicios de DSS y soporte técnico. 
+        IMPORTANTE: El número de factura asociado a esta licencia es: " . $invoice_number . ". Úsalo si el cliente pregunta por su factura o licencia.
         Sé amable, profesional y proporciona respuestas completas y detalladas. 
         Si no estás seguro de algo, sugiere contactar a v.torres@dssnetwork.es. Idioma: Español.";
 
