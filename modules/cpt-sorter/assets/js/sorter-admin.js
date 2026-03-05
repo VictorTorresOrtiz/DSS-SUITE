@@ -112,15 +112,21 @@ jQuery(document).ready(function ($) {
         }, function (response) {
             if (response.success) {
                 hasChanges = false;
-                $status.html('<span style="color:#16a34a;">Orden guardado correctamente.</span>');
-                setTimeout(function () { $status.text(''); }, 3000);
+                $status.text('');
+                if (window.dssNotify) {
+                    window.dssNotify({ title: 'Content Sorter', message: 'Orden guardado correctamente.', type: 'success' });
+                }
             } else {
                 $saveBtn.prop('disabled', false);
-                $status.html('<span style="color:#dc2626;">Error al guardar.</span>');
+                if (window.dssNotify) {
+                    window.dssNotify({ title: 'Content Sorter', message: 'Error al guardar el orden.', type: 'error' });
+                }
             }
         }).fail(function () {
             $saveBtn.prop('disabled', false);
-            $status.html('<span style="color:#dc2626;">Error de conexión.</span>');
+            if (window.dssNotify) {
+                window.dssNotify({ title: 'Content Sorter', message: 'Error de conexión con el servidor.', type: 'error' });
+            }
         });
     });
 

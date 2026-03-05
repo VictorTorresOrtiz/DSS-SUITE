@@ -204,10 +204,6 @@ function dss_sorter_ajax_save()
         wp_send_json_error('Tipo no válido.');
     }
 
-    if (class_exists('DSS_Notifications')) {
-        DSS_Notifications::get_instance()->add('Orden guardado correctamente.', 'success', 'Content Sorter');
-    }
-
     wp_send_json_success();
 }
 
