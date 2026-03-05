@@ -127,7 +127,7 @@ class DSS_Suite_Core
                 <span class="dashicons dashicons-lock"
                     style="font-size: 48px; width: 48px; height: 48px; color: #2271b1; margin-bottom: 20px;"></span>
                 <h1 style="font-size: 24px; margin-bottom: 10px;">Acceso Protegido</h1>
-                <p style="color: #64748b; margin-bottom: 30px;">Introduce la Master Key de DSS Suite para gestionar ajustes
+                <p style="color: #64748b; margin-bottom: 30px;">Introduce la clave de licencia para gestionar ajustes
                     críticos.</p>
 
                 <?php settings_errors('dss_suite_messages'); ?>
@@ -141,9 +141,6 @@ class DSS_Suite_Core
                         Desbloquear Panel
                     </button>
                 </form>
-                <p style="margin-top: 20px; font-size: 12px; color: #94a3b8;">
-                    Esta sección está restringida incluso para administradores.
-                </p>
             </div>
         </div>
         <?php
