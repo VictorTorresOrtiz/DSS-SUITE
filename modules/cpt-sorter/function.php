@@ -7,6 +7,42 @@
 if (!defined('ABSPATH'))
     exit;
 
+// 0. Menú en DSS Suite
+add_action('admin_menu', function () {
+    add_submenu_page(
+        'dss-suite',
+        'CPT Sorter',
+        'CPT Sorter',
+        'manage_options',
+        'cpt-sorter-settings',
+        'dss_cpt_sorter_render_page'
+    );
+});
+
+function dss_cpt_sorter_render_page()
+{
+    ?>
+    <div class="wrap">
+        <h1><span class="dashicons dashicons-sort" style="font-size: 28px; width: 28px; height: 28px;"></span> CPT Sorter
+        </h1>
+        <p>Este módulo habilita el ordenamiento manual por arrastrar y soltar (Drag & Drop) para los portfolios.</p>
+
+        <div
+            style="background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); max-width: 800px; margin-top: 20px;">
+            <h2>Instrucciones</h2>
+            <p>Para ordenar tus portfolios:</p>
+            <ol>
+                <li>Ve a <strong>Portfolios</strong> en el menú lateral.</li>
+                <li>Arrastra las filas hacia arriba o hacia abajo.</li>
+                <li>El orden se guardará automáticamente al soltar.</li>
+            </ol>
+            <p><a href="<?php echo admin_url('edit.php?post_type=cpt_portfolio'); ?>" class="button button-primary">Ir a
+                    Portfolios</a></p>
+        </div>
+    </div>
+    <?php
+}
+
 // 1. Asegurar soporte para 'page-attributes' (menu_order)
 add_action('init', 'cpt_portfolio_add_support', 99);
 function cpt_portfolio_add_support()

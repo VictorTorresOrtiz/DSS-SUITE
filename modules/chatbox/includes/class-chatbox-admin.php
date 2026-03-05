@@ -18,6 +18,7 @@ class DSS_Chatbox_Admin
         add_action('admin_enqueue_scripts', array($this, 'enqueue_assets'));
         add_action('admin_footer', array($this, 'render_chatbox'));
         add_action('wp_ajax_dss_send_chatbox_inquiry', array($this, 'handle_chat_inquiry'));
+        add_action('admin_menu', array($this, 'add_menu_page'));
     }
 
     /**
@@ -85,6 +86,47 @@ class DSS_Chatbox_Admin
                         </button>
                     </form>
                 </div>
+            </div>
+        </div>
+        <?php
+    }
+
+    /**
+     * Add sub-menu to DSS Suite.
+     */
+    public function add_menu_page()
+    {
+        add_submenu_page(
+            'dss-suite',
+            'Chatbox de Soporte',
+            'Chatbox IA',
+            'manage_options',
+            'dss-chatbox-settings',
+            array($this, 'render_settings_page')
+        );
+    }
+
+    /**
+     * Render the settings/info page for Chatbox.
+     */
+    public function render_settings_page()
+    {
+        if (!current_user_can('manage_options')) {
+            return;
+        }
+        ?>
+        <div class="wrap">
+            <h1><span class="dashicons dashicons-format-chat" style="font-size: 28px; width: 28px; height: 28px;"></span> Chatbox de Soporte Inteligente</h1>
+            <p>Este módulo añade un asistente virtual en todas las páginas de administración de WordPress.</p>
+            
+            <div style="background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); max-width: 800px; margin-top: 20px;">
+                <h2>Instrucciones de uso</h2>
+                <ul>
+                    <li>El chatbox aparece automáticamente en la esquina inferior derecha.</li>
+                    <li>Utiliza el botón flotante para abrir el asistente.</li>
+                    <li>Puedes pedirle que cree entradas, productos o que te dé un resumen de ventas.</li>
+                    <li><strong>Nota:</strong> Los ajustes de la API Key se configuran globalmente en <a href="<?php echo admin_url('admin.php?page=dss-suite-ai'); ?>">IA y Licencia</a>.</li>
+                </ul>
             </div>
         </div>
         <?php

@@ -25,8 +25,9 @@ class DSS_Theme_Branding
 
     public function add_admin_menu()
     {
-        add_theme_page(
-            'Configurar tema',
+        add_submenu_page(
+            'dss-suite',
+            'Marca del Tema',
             'Marca del Tema',
             'manage_options',
             'custom-theme-branding',
