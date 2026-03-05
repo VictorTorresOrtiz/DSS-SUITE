@@ -157,16 +157,16 @@ class FFL_Admin_Theme_Setting
 
 	function admin_scripts()
 	{
-
 		wp_enqueue_style('admin-theme-variables', $this->plugin_url . ("theme/color.variables.css"));
 
 		$this->export_customize();
 
 		wp_enqueue_style('admin-theme-admin', $this->plugin_url . ("theme/admin.css"));
-
 		wp_enqueue_style('admin-theme-color', $this->plugin_url . ("theme/color.css"));
-
 		wp_enqueue_style('admin-theme-theme', $this->plugin_url . ("theme/theme.css"));
+
+		// Carga del nuevo rediseño premium
+		wp_enqueue_style('dss-dashboard-redesign', $this->plugin_url . ("assets/css/dss-dashboard-redesign.css"));
 
 		wp_add_inline_style('admin-theme-style', $this->get_setting('admin_css'));
 		wp_add_inline_script('admin-theme-main', $this->get_setting('admin_js'));
@@ -219,7 +219,7 @@ class FFL_Admin_Theme_Setting
 	function admin_screen()
 	{
 		do_action('admin_screen_start');
-		include 'tpl.php';
+		include 'tpl-redesign.php';
 		do_action('admin_screen_end');
 	}
 }

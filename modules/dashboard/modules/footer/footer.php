@@ -3,40 +3,44 @@
  * @author Víctor Torres ortiz
  */
 
-class FFL_Admin_Theme_Footer{
+class FFL_Admin_Theme_Footer
+{
 
 	private $setting;
 
-	function __construct($setting) {
+	function __construct($setting)
+	{
 		$this->setting = $setting;
 
-		add_filter( 'admin_footer_text', array( $this, 'admin_footer' ) );
-		add_filter( 'update_footer', array( $this, 'admin_footer' ), 999 );
+		add_filter('admin_footer_text', array($this, 'admin_footer'));
+		add_filter('update_footer', array($this, 'admin_footer'), 999);
 
-		add_action( 'admin_screen_col_1', array( $this, 'admin_screen' ));
+		add_action('admin_screen_footer_section', array($this, 'admin_screen'));
 	}
 
 	// admin footer
-	function admin_footer( $default ){
-		if(  strpos($default, 'wordpress') === false ){
-			if( $this->setting->get_setting('footer_version_hide') ){
+	function admin_footer($default)
+	{
+		if (strpos($default, 'wordpress') === false) {
+			if ($this->setting->get_setting('footer_version_hide')) {
 				return '';
 			}
-			if( $this->setting->get_setting('footer_version') ){
+			if ($this->setting->get_setting('footer_version')) {
 				return $this->setting->get_setting('footer_version');
 			}
-		}else{
-			if( $this->setting->get_setting('footer_text_hide') ){
+		} else {
+			if ($this->setting->get_setting('footer_text_hide')) {
 				return '';
 			}
-			if( $this->setting->get_setting('footer_text') ){
+			if ($this->setting->get_setting('footer_text')) {
 				return $this->setting->get_setting('footer_text');
 			}
 		}
 		return $default;
 	}
 
-	function admin_screen() {
+	function admin_screen()
+	{
 		include 'tpl.php';
 	}
 }
