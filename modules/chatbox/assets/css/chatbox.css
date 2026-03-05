@@ -126,6 +126,9 @@
     line-height: 1.5;
     position: relative;
     animation: dssFadeInUp 0.3s ease forwards;
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
 @keyframes dssFadeInUp {

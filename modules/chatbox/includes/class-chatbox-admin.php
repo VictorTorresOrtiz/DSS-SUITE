@@ -113,25 +113,59 @@ class DSS_Chatbox_Admin
             $available_models = array('models/gemini-1.5-flash', 'models/gemini-pro', 'models/gemini-1.0-pro');
         }
 
+        // Definición de herramientas (Tools) para Gemini
+        $tools = array(
+            array(
+                'function_declarations' => array(
+                    array(
+                        'name' => 'create_wp_post',
+                        'description' => 'Crea una nueva entrada (blog post) en WordPress.',
+                        'parameters' => array(
+                            'type' => 'object',
+                            'properties' => array(
+                                'title' => array('type' => 'string', 'description' => 'El título de la entrada.'),
+                                'content' => array('type' => 'string', 'description' => 'El contenido detallado de la entrada en formato HTML o texto plano.'),
+                            ),
+                            'required' => array('title', 'content')
+                        )
+                    ),
+                    array(
+                        'name' => 'create_wc_product',
+                        'description' => 'Crea un nuevo producto en WooCommerce.',
+                        'parameters' => array(
+                            'type' => 'object',
+                            'properties' => array(
+                                'name' => array('type' => 'string', 'description' => 'Nombre del producto.'),
+                                'price' => array('type' => 'string', 'description' => 'Precio del producto (solo el número).'),
+                                'description' => array('type' => 'string', 'description' => 'Descripción del producto.')
+                            ),
+                            'required' => array('name', 'price')
+                        )
+                    )
+                )
+            )
+        );
+
         $reply = '';
         $last_error = '';
 
         foreach ($available_models as $full_model_name) {
-            // El nombre ya viene como "models/XXXX" desde ListModels o nuestro fallback
             $url = "https://generativelanguage.googleapis.com/v1beta/" . $full_model_name . ":generateContent?key=" . $api_key;
 
             $body = array(
+                'system_instruction' => array(
+                    'parts' => array(array('text' => $system_prompt))
+                ),
                 'contents' => array(
                     array(
                         'role' => 'user',
-                        'parts' => array(
-                            array('text' => "Instrucciones: " . $system_prompt . "\n\nPregunta del cliente: " . $message)
-                        )
+                        'parts' => array(array('text' => $message))
                     )
                 ),
+                'tools' => $tools,
                 'generationConfig' => array(
                     'temperature' => 0.7,
-                    'maxOutputTokens' => 1024
+                    'maxOutputTokens' => 2048
                 )
             );
 
@@ -149,6 +183,46 @@ class DSS_Chatbox_Admin
             $res_body = wp_remote_retrieve_body($response);
             $data = json_decode($res_body, true);
 
+            // Manejo de llamadas a funciones (Function Calling)
+            if (isset($data['candidates'][0]['content']['parts'][0]['functionCall'])) {
+                $call = $data['candidates'][0]['content']['parts'][0]['functionCall'];
+                $function_name = $call['name'];
+                $args = $call['args'];
+
+                $tool_result = $this->execute_ai_tool($function_name, $args);
+
+                // Añadimos el historial para que la IA genere el texto final
+                $body['contents'][] = array(
+                    'role' => 'model',
+                    'parts' => array(array('functionCall' => $call))
+                );
+                $body['contents'][] = array(
+                    'role' => 'function',
+                    'parts' => array(
+                        array(
+                            'functionResponse' => array(
+                                'name' => $function_name,
+                                'response' => array('output' => $tool_result)
+                            )
+                        )
+                    )
+                );
+
+                $final_response = wp_remote_post($url, array(
+                    'body' => json_encode($body),
+                    'headers' => array('Content-Type' => 'application/json'),
+                    'timeout' => 30
+                ));
+
+                if (!is_wp_error($final_response)) {
+                    $final_data = json_decode(wp_remote_retrieve_body($final_response), true);
+                    if (isset($final_data['candidates'][0]['content']['parts'][0]['text'])) {
+                        $reply = $final_data['candidates'][0]['content']['parts'][0]['text'];
+                        break;
+                    }
+                }
+            }
+
             if (isset($data['candidates'][0]['content']['parts'][0]['text'])) {
                 $reply = $data['candidates'][0]['content']['parts'][0]['text'];
                 break;
@@ -163,6 +237,45 @@ class DSS_Chatbox_Admin
         } else {
             $model_list = !empty($available_models) ? implode(', ', $available_models) : 'ninguno';
             wp_send_json_error(array('message' => "La IA no pudo responder. Modelos detectados: $model_list. Último error: $last_error"));
+        }
+    }
+
+    /**
+     * Executes a tool called by the AI.
+     */
+    private function execute_ai_tool($name, $args)
+    {
+        switch ($name) {
+            case 'create_wp_post':
+                $post_id = wp_insert_post(array(
+                    'post_title' => sanitize_text_field($args['title']),
+                    'post_content' => wp_kses_post($args['content']),
+                    'post_status' => 'draft',
+                    'post_type' => 'post'
+                ));
+
+                if (is_wp_error($post_id)) {
+                    return "Error al crear la entrada: " . $post_id->get_error_message();
+                }
+
+                return "Entrada creada correctamente como borrador. ID: " . $post_id . ". Enlace de edición: " . get_edit_post_link($post_id);
+
+            case 'create_wc_product':
+                if (!class_exists('WooCommerce')) {
+                    return "Error: WooCommerce no está activo en este sitio.";
+                }
+
+                $product = new WC_Product_Simple();
+                $product->set_name(sanitize_text_field($args['name']));
+                $product->set_status('draft');
+                $product->set_regular_price(sanitize_text_field($args['price']));
+                $product->set_description(wp_kses_post($args['description'] ?? ''));
+                $product_id = $product->save();
+
+                return "Producto creado correctamente como borrador. ID: " . $product_id . ". Enlace de edición: " . get_edit_post_link($product_id);
+
+            default:
+                return "Herramienta no reconocida.";
         }
     }
 }
