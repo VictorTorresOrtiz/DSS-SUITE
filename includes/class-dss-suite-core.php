@@ -53,6 +53,9 @@ class DSS_Suite_Core
      */
     public function __construct()
     {
+        require_once DSS_SUITE_PLUGIN_DIR . 'includes/class-dss-notifications.php';
+        DSS_Notifications::get_instance();
+
         add_action('admin_menu', array($this, 'register_admin_menu'));
         add_action('admin_init', array($this, 'register_settings'));
         add_action('admin_init', array($this, 'handle_panel_unlock'));
@@ -228,6 +231,7 @@ class DSS_Suite_Core
 
         if (isset($_GET['unlocked'])) {
             add_settings_error('dss_suite_messages', 'dss_auth_success', 'Panel desbloqueado correctamente.', 'updated');
+            DSS_Notifications::get_instance()->add('¡Bienvenido! El panel de DSS Suite se ha desbloqueado correctamente.', 'success', 'Acceso Concedido');
         }
 
         settings_errors('dss_suite_messages');
