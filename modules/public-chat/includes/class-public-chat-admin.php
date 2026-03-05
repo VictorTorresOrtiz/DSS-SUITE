@@ -28,9 +28,13 @@ class DSS_Public_Chat_Admin
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_assets'));
     }
 
-    /**
-     * Enqueue admin assets.
-     */
+    public function enqueue_admin_assets($hook)
+    {
+        if ('dss-suite_page_dss-public-chat' !== $hook) {
+            return;
+        }
+        wp_enqueue_media();
+        wp_enqueue_style('dss-public-chat-admin-style', DSS_PUBLIC_CHAT_URL . 'assets/css/public-chat-admin.css', array(), DSS_PUBLIC_CHAT_VERSION);
         wp_enqueue_script('dss-public-chat-admin-js', DSS_PUBLIC_CHAT_URL . 'assets/js/public-chat-admin.js', array('jquery'), DSS_PUBLIC_CHAT_VERSION, true);
 
         // Pass Dashicons list to JS
