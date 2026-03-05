@@ -50,15 +50,14 @@ class DSS_Chatbox_Admin
                     <button id="dss-chatbox-close">&times;</button>
                 </div>
                 <div id="dss-chatbox-history" class="dss-chatbox-body">
-                    <div class="dss-message dss-bot-message">
-                        ¡Hola! Soy el asistente de DSS NETWORK. ¿En qué puedo ayudarte hoy?
+                    <div class="dss-message dss-bot-message">¡Hola! Soy el asistente de DSS NETWORK. ¿En qué puedo ayudarte hoy?</div>
+                    
+                    <!-- Suggestion Chips inside history for inline placement -->
+                    <div class="dss-suggestion-chips">
+                        <button class="dss-chip" data-query="Crea una entrada de blog sobre ">📝 Crear Entrada</button>
+                        <button class="dss-chip" data-query="Crea un producto llamado ">🛍️ Crear Producto</button>
+                        <button class="dss-chip" data-query="¿Cómo puedo optimizar mi sitio?">🚀 Opt. Sitio</button>
                     </div>
-                </div>
-                <!-- Suggestion Chips -->
-                <div class="dss-suggestion-chips">
-                    <button class="dss-chip" data-query="Crea una entrada de blog sobre ">📝 Crear Entrada</button>
-                    <button class="dss-chip" data-query="Crea un producto llamado ">🛍️ Crear Producto</button>
-                    <button class="dss-chip" data-query="¿Cómo puedo optimizar mi sitio?">🚀 Optimizar Sitio</button>
                 </div>
                 <div class="dss-chatbox-footer">
                     <form id="dss-chatbox-form">
