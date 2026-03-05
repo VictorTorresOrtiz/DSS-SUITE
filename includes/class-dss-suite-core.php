@@ -35,6 +35,11 @@ class DSS_Suite_Core
             'name' => 'CPT Sorter',
             'description' => 'Habilita ordenamiento manual (Drag & Drop) para los cpt de themerex u otros temas.',
             'file' => 'cpt-sorter/function.php',
+        ),
+        'chatbox' => array(
+            'name' => 'Chatbox de Soporte',
+            'description' => 'Añade un chatbox moderno en el área de administración para consultas de clientes.',
+            'file' => 'chatbox/chatbox.php',
         )
     );
 
@@ -73,6 +78,7 @@ class DSS_Suite_Core
     public function register_settings()
     {
         register_setting('dss_suite_options_group', 'dss_suite_active_modules');
+        register_setting('dss_suite_options_group', 'dss_suite_gemini_api_key');
     }
 
     /**
@@ -149,6 +155,23 @@ class DSS_Suite_Core
                         <?php endforeach; ?>
                     </tbody>
                 </table>
+
+                <div style="margin-top: 30px; padding: 20px; background: #fff; border: 1px solid #ccd0d4; border-radius: 4px;">
+                    <h2>Configuración de IA (Gemini)</h2>
+                    <p>Introduce tu API Key de Google AI Studio para habilitar el bot de soporte inteligente.</p>
+                    <table class="form-table">
+                        <tr>
+                            <th scope="row"><label for="dss_suite_gemini_api_key">Gemini API Key</label></th>
+                            <td>
+                                <input type="password" name="dss_suite_gemini_api_key" id="dss_suite_gemini_api_key"
+                                    value="<?php echo esc_attr(get_option('dss_suite_gemini_api_key')); ?>"
+                                    class="regular-text">
+                                <p class="description">Puedes obtener una clave gratuita en <a
+                                        href="https://aistudio.google.com/" target="_blank">Google AI Studio</a>.</p>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
 
                 <?php submit_button('Guardar Cambios'); ?>
             </form>
