@@ -9,7 +9,7 @@ $hide_updates = get_option('ctb_hide_updates');
 ?>
 <div class="wrap dss-white-label-wrap">
     <div class="dss-header-section">
-        <h1>Marca Blanca Pro</h1>
+        <h1>Theme Settings</h1>
         <p>Personaliza la identidad de WordPress para tus clientes con un toque premium.</p>
     </div>
 
