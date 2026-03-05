@@ -1,0 +1,200 @@
+/**
+ * DSS Dashboard Redesign
+ * Estilos premium con Glassmorphism y layout unificado
+ */
+
+:root {
+    --dss-primary: #0cc2aa;
+    --dss-primary-hover: #0bb09a;
+    --dss-glass-bg: rgba(255, 255, 255, 0.7);
+    --dss-glass-border: rgba(255, 255, 255, 0.4);
+    --dss-glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+    --dss-text: #2c3e50;
+    --dss-text-muted: #7f8c8d;
+    --dss-sidebar-width: 240px;
+    --dss-radius: 16px;
+}
+
+/* Layout Principal */
+.dss-dashboard-container {
+    display: flex;
+    min-height: calc(100vh - 160px);
+    margin: 20px 20px 0 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    gap: 24px;
+}
+
+/* Sidebar Estilo Glass */
+.dss-dashboard-sidebar {
+    width: var(--dss-sidebar-width);
+    background: var(--dss-glass-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--dss-glass-border);
+    border-radius: var(--dss-radius);
+    padding: 24px 0;
+    box-shadow: var(--dss-glass-shadow);
+    height: fit-content;
+    position: sticky;
+    top: 52px;
+}
+
+.dss-sidebar-nav {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.dss-nav-item {
+    margin: 4px 12px;
+}
+
+.dss-nav-link {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    color: var(--dss-text);
+    text-decoration: none;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    gap: 12px;
+    font-weight: 500;
+}
+
+.dss-nav-link i {
+    font-size: 20px;
+    width: 24px;
+    text-align: center;
+}
+
+.dss-nav-link:hover {
+    background: rgba(255, 255, 255, 0.5);
+    color: var(--dss-primary);
+}
+
+.dss-nav-link.active {
+    background: var(--dss-primary);
+    color: white;
+    box-shadow: 0 4px 12px rgba(12, 194, 170, 0.3);
+}
+
+/* Panel de Contenido */
+.dss-dashboard-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.dss-content-section {
+    display: none;
+    animation: fadeIn 0.4s ease;
+}
+
+.dss-content-section.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Tarjetas Premium */
+.dss-card {
+    background: white;
+    border-radius: var(--dss-radius);
+    border: 1px solid #ebeef5;
+    box-shadow: 0 2px 12px 0 rgba(0,0,0,0.05);
+    margin-bottom: 24px;
+    overflow: hidden;
+}
+
+.dss-card-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #ebeef5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.dss-card-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--dss-text);
+}
+
+.dss-card-body {
+    padding: 24px;
+}
+
+/* Form Styling */
+.dss-form-group {
+    margin-bottom: 20px;
+}
+
+.dss-form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: var(--dss-text);
+}
+
+.dss-form-help {
+    font-size: 13px;
+    color: var(--dss-text-muted);
+    margin-top: 4px;
+}
+
+/* Grid layout for settings */
+.dss-settings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+/* Botones flotantes / Footer fijo en sidebar o similar */
+.dss-sidebar-footer {
+    padding: 24px 12px 0 12px;
+    border-top: 1px solid var(--dss-glass-border);
+    margin-top: 24px;
+}
+
+.dss-save-button {
+    background: var(--dss-primary);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.3s ease;
+}
+
+.dss-save-button:hover {
+    background: var(--dss-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(12, 194, 170, 0.3);
+}
+
+/* Responsive */
+@media (max-width: 960px) {
+    .dss-dashboard-container {
+        flex-direction: column;
+    }
+    .dss-dashboard-sidebar {
+        width: 100%;
+        position: static;
+    }
+    .dss-sidebar-nav {
+        display: flex;
+        overflow-x: auto;
+        padding-bottom: 12px;
+    }
+    .dss-nav-item {
+        margin: 0 4px;
+        flex-shrink: 0;
+    }
+}

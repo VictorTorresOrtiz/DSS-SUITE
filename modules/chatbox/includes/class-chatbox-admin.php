@@ -26,7 +26,7 @@ class DSS_Chatbox_Admin
      */
     public function enqueue_assets()
     {
-        if (!current_user_can('manage_options')) {
+        if (!current_user_can('read')) {
             return;
         }
         wp_enqueue_style('dss-chatbox-style', DSS_SUITE_PLUGIN_URL . 'modules/chatbox/assets/css/chatbox.css', array('dashicons'), DSS_CHATBOX_VERSION);
@@ -43,7 +43,7 @@ class DSS_Chatbox_Admin
      */
     public function render_chatbox()
     {
-        if (!current_user_can('manage_options')) {
+        if (!current_user_can('read')) {
             return;
         }
         ?>
@@ -139,7 +139,7 @@ class DSS_Chatbox_Admin
     {
         check_ajax_referer('dss_chatbox_nonce', 'nonce');
 
-        if (!current_user_can('manage_options')) {
+        if (!current_user_can('read')) {
             wp_send_json_error(array('message' => 'Permisos insuficientes.'));
         }
 
