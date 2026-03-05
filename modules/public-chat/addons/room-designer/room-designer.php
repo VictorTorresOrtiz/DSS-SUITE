@@ -18,27 +18,16 @@ class DSS_Room_Designer
         add_action('wp_enqueue_scripts', array($this, 'enqueue_assets'));
         add_action('wp_ajax_dss_room_designer', array($this, 'handle_request'));
         add_action('wp_ajax_nopriv_dss_room_designer', array($this, 'handle_request'));
-        add_filter('dss_public_chat_footer_buttons', array($this, 'add_chat_button'));
     }
 
     public function enqueue_assets()
     {
         wp_enqueue_style('dss-room-designer', DSS_ROOM_DESIGNER_URL . 'assets/css/room-designer.css', array('dashicons'), DSS_SUITE_VERSION);
-        wp_enqueue_script('dss-room-designer', DSS_ROOM_DESIGNER_URL . 'assets/js/room-designer.js', array('jquery'), DSS_SUITE_VERSION, true);
+        wp_enqueue_script('dss-room-designer', DSS_ROOM_DESIGNER_URL . 'assets/js/room-designer.js', array('jquery', 'dss-public-chat-script'), DSS_SUITE_VERSION, true);
         wp_localize_script('dss-room-designer', 'dssRoomDesigner', array(
             'ajaxUrl' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('dss_room_designer_nonce'),
         ));
-    }
-
-    public function add_chat_button($buttons)
-    {
-        $buttons[] = array(
-            'id' => 'dss-room-designer-btn',
-            'icon' => 'dashicons-admin-home',
-            'label' => 'Diseñar Habitación',
-        );
-        return $buttons;
     }
 
     /**

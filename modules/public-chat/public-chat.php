@@ -23,4 +23,3 @@ function dss_public_chat_init()
 }
 add_action('init', 'dss_public_chat_init');
 
-//TODO: Mejorar el chat publico, crear los addons default y que vaya alternando
