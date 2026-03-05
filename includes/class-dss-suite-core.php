@@ -53,12 +53,88 @@ class DSS_Suite_Core
      */
     public function __construct()
     {
-        // Init settings page
         add_action('admin_menu', array($this, 'register_admin_menu'));
         add_action('admin_init', array($this, 'register_settings'));
+        add_action('admin_init', array($this, 'handle_panel_unlock'));
+        $this->load_modules();
+    }
 
-        // Load active modules
-        $this->load_active_modules();
+    /**
+     * Handle the Master Key unlock process.
+     */
+    public function handle_panel_unlock()
+    {
+        if (isset($_POST['dss_master_key_submit'])) {
+            check_admin_referer('dss_unlock_action', 'dss_unlock_nonce');
+
+            if (!current_user_can('manage_options')) {
+                return;
+            }
+
+            $input_key = isset($_POST['dss_master_key']) ? sanitize_text_field($_POST['dss_master_key']) : '';
+
+            // Requerimos que la clave esté definida en wp-config.php por seguridad
+            if (!defined('DSS_MASTER_KEY')) {
+                add_settings_error('dss_suite_messages', 'dss_auth_error', 'Error de Seguridad: La Master Key no está configurada en el servidor (wp-config.php). Contacte con el soporte técnico.', 'error');
+                return;
+            }
+
+            if ($input_key === DSS_MASTER_KEY) {
+                if (!session_id()) {
+                    session_start();
+                }
+                $_SESSION['dss_suite_authorized'] = true;
+                wp_safe_redirect(add_query_arg('unlocked', '1', wp_get_referer()));
+                exit;
+            } else {
+                add_settings_error('dss_suite_messages', 'dss_auth_error', 'Contraseña incorrecta. Acceso denegado.', 'error');
+            }
+        }
+    }
+
+    /**
+     * Check if the current session is authorized to view protected pages.
+     */
+    private function is_panel_authorized()
+    {
+        if (!session_id()) {
+            session_start();
+        }
+        return isset($_SESSION['dss_suite_authorized']) && $_SESSION['dss_suite_authorized'] === true;
+    }
+
+    /**
+     * Render the Password Protection Screen.
+     */
+    private function render_lock_screen()
+    {
+        ?>
+        <div class="wrap">
+            <div
+                style="max-width: 400px; margin: 100px auto; padding: 40px; background: #fff; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; border: 1px solid #e2e8f0;">
+                <span class="dashicons dashicons-lock"
+                    style="font-size: 48px; width: 48px; height: 48px; color: #2271b1; margin-bottom: 20px;"></span>
+                <h1 style="font-size: 24px; margin-bottom: 10px;">Acceso Protegido</h1>
+                <p style="color: #64748b; margin-bottom: 30px;">Introduce la Master Key de DSS Suite para gestionar ajustes
+                    críticos.</p>
+
+                <?php settings_errors('dss_suite_messages'); ?>
+
+                <form method="post" action="">
+                    <?php wp_nonce_field('dss_unlock_action', 'dss_unlock_nonce'); ?>
+                    <input type="password" name="dss_master_key" placeholder="Contraseña Privada" required
+                        style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 20px; font-size: 16px; text-align: center;">
+                    <button type="submit" name="dss_master_key_submit" class="button button-primary button-large"
+                        style="width: 100%; height: 45px; font-weight: 600;">
+                        Desbloquear Panel
+                    </button>
+                </form>
+                <p style="margin-top: 20px; font-size: 12px; color: #94a3b8;">
+                    Esta sección está restringida incluso para administradores.
+                </p>
+            </div>
+        </div>
+        <?php
     }
 
     /**
@@ -111,7 +187,7 @@ class DSS_Suite_Core
     /**
      * Load only the modules that are enabled in the settings.
      */
-    private function load_active_modules()
+    private function load_modules()
     {
         $active_modules = get_option('dss_suite_active_modules', array());
 
@@ -136,10 +212,19 @@ class DSS_Suite_Core
             return;
         }
 
+        if (!$this->is_panel_authorized()) {
+            $this->render_lock_screen();
+            return;
+        }
+
         $active_modules = get_option('dss_suite_active_modules', array());
 
         if (isset($_GET['settings-updated'])) {
             add_settings_error('dss_suite_messages', 'dss_suite_message', __('Settings Saved', 'dss-suite'), 'updated');
+        }
+
+        if (isset($_GET['unlocked'])) {
+            add_settings_error('dss_suite_messages', 'dss_auth_success', 'Panel desbloqueado correctamente.', 'updated');
         }
 
         settings_errors('dss_suite_messages');
@@ -191,6 +276,11 @@ class DSS_Suite_Core
         if (!current_user_can('manage_options')) {
             return;
         }
+
+        if (!$this->is_panel_authorized()) {
+            $this->render_lock_screen();
+            return;
+        }
         ?>
         <div class="wrap">
             <h1>DSS Suite - IA y Licencia</h1>
@@ -199,7 +289,8 @@ class DSS_Suite_Core
             <form action="options.php" method="post">
                 <?php settings_fields('dss_suite_options_group'); ?>
 
-                <div style="margin-top: 20px; padding: 25px; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                <div
+                    style="margin-top: 20px; padding: 25px; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
                     <h2 style="margin-top:0;">Configuración de Gemini</h2>
                     <table class="form-table">
                         <tr>
@@ -208,7 +299,8 @@ class DSS_Suite_Core
                                 <input type="password" name="dss_suite_gemini_api_key" id="dss_suite_gemini_api_key"
                                     value="<?php echo esc_attr(get_option('dss_suite_gemini_api_key')); ?>"
                                     class="regular-text">
-                                <p class="description">Obtén tu clave en <a href="https://aistudio.google.com/" target="_blank">Google AI Studio</a>.</p>
+                                <p class="description">Obtén tu clave en <a href="https://aistudio.google.com/"
+                                        target="_blank">Google AI Studio</a>.</p>
                             </td>
                         </tr>
                         <tr>
@@ -249,7 +341,11 @@ class DSS_Suite_Core
                 position: relative;
                 cursor: pointer;
             }
-            .dss-switch input:checked[type=checkbox] { background: #2271b1; }
+
+            .dss-switch input:checked[type=checkbox] {
+                background: #2271b1;
+            }
+
             .dss-switch input[type=checkbox]:before {
                 content: '';
                 position: absolute;
@@ -263,7 +359,10 @@ class DSS_Suite_Core
                 box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
                 transition: 0.5s;
             }
-            .dss-switch input:checked[type=checkbox]:before { left: 20px; }
+
+            .dss-switch input:checked[type=checkbox]:before {
+                left: 20px;
+            }
         </style>
         <?php
     }
