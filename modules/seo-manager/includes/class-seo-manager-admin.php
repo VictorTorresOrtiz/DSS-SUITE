@@ -73,7 +73,11 @@ class DSS_SEO_Manager_Admin
                 }
             }
             update_option('tag_changer_rules', $sanitized_rules);
-            echo '<div class="updated"><p>Reglas guardadas correctamente.</p></div>';
+            if (class_exists('DSS_Notifications')) {
+                DSS_Notifications::get_instance()->add_persistent('Las reglas SEO se han guardado correctamente.', 'success', 'SEO Manager');
+            }
+            wp_safe_redirect(admin_url('admin.php?page=tag-changer'));
+            exit;
         }
 
         $rules = get_option('tag_changer_rules', [['selector' => '', 'tag' => 'h3', 'extra_classes' => '']]);
