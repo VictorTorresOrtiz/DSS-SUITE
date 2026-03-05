@@ -1,0 +1,215 @@
+.dss-sorter-container {
+    max-width: 900px;
+    margin: 20px 0;
+}
+
+.dss-sorter-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.dss-sorter-header h1 {
+    margin: 0;
+    font-size: 24px;
+    color: #1e293b;
+}
+
+.dss-sorter-desc {
+    color: #64748b;
+    font-size: 15px;
+    margin-bottom: 25px;
+}
+
+.dss-badge {
+    background: #e0f2fe;
+    color: #0369a1;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+/* Selector */
+.dss-sorter-selector {
+    background: #fff;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
+    margin-bottom: 20px;
+}
+
+.dss-sorter-group label {
+    display: block;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.dss-sorter-group select {
+    width: 100%;
+    max-width: 400px;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 14px;
+    background: #fff;
+    color: #1e293b;
+    transition: border-color 0.2s;
+}
+
+.dss-sorter-group select:focus {
+    border-color: #2271b1;
+    box-shadow: 0 0 0 3px rgba(34, 113, 177, 0.1);
+    outline: none;
+}
+
+/* Panel */
+.dss-sorter-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
+}
+
+.dss-sorter-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.dss-sorter-count {
+    font-size: 13px;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.dss-sorter-hint {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+.dss-sorter-hint .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+}
+
+/* Sortable List */
+.dss-sortable-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.dss-sortable-list li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    margin-bottom: 4px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    cursor: move;
+    transition: box-shadow 0.2s, border-color 0.2s;
+    font-size: 14px;
+    color: #1e293b;
+    user-select: none;
+}
+
+.dss-sortable-list li:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.dss-sortable-list li.ui-sortable-helper {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+    border-color: #2271b1;
+    background: #fff;
+    z-index: 10;
+}
+
+.dss-sortable-list li.ui-sortable-placeholder {
+    visibility: visible !important;
+    background: #eef4ff;
+    border: 2px dashed #93c5fd;
+    border-radius: 8px;
+}
+
+.dss-sort-handle {
+    color: #94a3b8;
+    flex-shrink: 0;
+}
+
+.dss-sort-handle .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+}
+
+.dss-sort-position {
+    background: #e2e8f0;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 700;
+    min-width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    flex-shrink: 0;
+}
+
+.dss-sort-title {
+    flex: 1;
+    font-weight: 500;
+}
+
+.dss-sort-meta {
+    font-size: 12px;
+    color: #94a3b8;
+    flex-shrink: 0;
+}
+
+/* Actions */
+.dss-sorter-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #f1f5f9;
+}
+
+.dss-sorter-save-status {
+    font-size: 13px;
+    color: #64748b;
+}
+
+/* Loading */
+.dss-sorter-loading {
+    text-align: center;
+    padding: 40px;
+    color: #94a3b8;
+    font-size: 14px;
+}
+
+.dss-sorter-empty {
+    text-align: center;
+    padding: 40px;
+    color: #94a3b8;
+    font-size: 14px;
+}
