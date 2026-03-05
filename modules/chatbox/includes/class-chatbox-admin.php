@@ -162,26 +162,31 @@ class DSS_Chatbox_Admin
         Sé amable, profesional y proporciona respuestas completas y detalladas. 
         Si no estás seguro de algo, sugiere contactar a v.torres@dssnetwork.es. Idioma: Español.";
 
-        // --- FASE DE DESCUBRIMIENTO DE MODELO ---
-        // Consultamos qué modelos están disponibles exactamente para esta API Key
-        $list_url = "https://generativelanguage.googleapis.com/v1beta/models?key=" . $api_key;
-        $list_response = wp_remote_get($list_url);
-        $available_models = array();
+        // --- FASE DE DESCUBRIMIENTO DE MODELO (con caché 24h) ---
+        $cache_key = 'dss_gemini_models_' . md5($api_key);
+        $available_models = get_transient($cache_key);
 
-        if (!is_wp_error($list_response)) {
-            $list_data = json_decode(wp_remote_retrieve_body($list_response), true);
-            if (isset($list_data['models'])) {
-                foreach ($list_data['models'] as $m) {
-                    if (in_array('generateContent', $m['supportedGenerationMethods'])) {
-                        $available_models[] = $m['name']; // Nombre completo: models/gemini-1.5-flash
+        if (false === $available_models) {
+            $available_models = array();
+            $list_url = "https://generativelanguage.googleapis.com/v1beta/models?key=" . $api_key;
+            $list_response = wp_remote_get($list_url);
+
+            if (!is_wp_error($list_response)) {
+                $list_data = json_decode(wp_remote_retrieve_body($list_response), true);
+                if (isset($list_data['models'])) {
+                    foreach ($list_data['models'] as $m) {
+                        if (in_array('generateContent', $m['supportedGenerationMethods'])) {
+                            $available_models[] = $m['name'];
+                        }
                     }
                 }
             }
-        }
 
-        // Si falla el descubrimiento, usamos fallback manual (sin el prefijo models/ para compatibilidad con la URL)
-        if (empty($available_models)) {
-            $available_models = array('models/gemini-1.5-flash', 'models/gemini-pro', 'models/gemini-1.0-pro');
+            if (empty($available_models)) {
+                $available_models = array('models/gemini-1.5-flash', 'models/gemini-pro', 'models/gemini-1.0-pro');
+            }
+
+            set_transient($cache_key, $available_models, DAY_IN_SECONDS);
         }
 
         // Definición de herramientas (Tools) para Gemini
@@ -385,12 +390,16 @@ class DSS_Chatbox_Admin
         // 2. Ventas y Producto más vendido (simulado o simplificado para este contexto)
         // En un entorno WordPress real, usaríamos consultas SQL o WC_Order_Query
         global $wpdb;
-        $date_filter = "post_date >= '" . date('Y-m-d') . " 00:00:00'";
-        if ($period == 'week') $date_filter = "post_date >= '" . date('Y-m-d', strtotime('-7 days')) . " 00:00:00'";
-        
-        $sales = $wpdb->get_var("SELECT SUM(meta_value) FROM {$wpdb->postmeta} pm 
-            JOIN {$wpdb->posts} p ON p.ID = pm.post_id 
-            WHERE meta_key = '_order_total' AND p.post_type = 'shop_order' AND p.post_status = 'wc-completed' AND $date_filter");
+        $date_start = ($period == 'week')
+            ? date('Y-m-d', strtotime('-7 days')) . ' 00:00:00'
+            : date('Y-m-d') . ' 00:00:00';
+
+        $sales = $wpdb->get_var($wpdb->prepare(
+            "SELECT SUM(pm.meta_value) FROM {$wpdb->postmeta} pm
+            JOIN {$wpdb->posts} p ON p.ID = pm.post_id
+            WHERE pm.meta_key = '_order_total' AND p.post_type = 'shop_order' AND p.post_status = 'wc-completed' AND p.post_date >= %s",
+            $date_start
+        ));
         
         $sales_amount = $sales ? number_format($sales, 2) . '€' : '0.00€';
 

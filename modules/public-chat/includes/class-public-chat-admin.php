@@ -326,30 +326,36 @@ class DSS_Public_Chat_Admin
             }
         }
 
-        // --- MODEL DISCOVERY PHASE ---
-        $list_url = "https://generativelanguage.googleapis.com/v1beta/models?key=" . $api_key;
-        $list_response = wp_remote_get($list_url);
-        $available_models = array();
+        // --- MODEL DISCOVERY PHASE (con caché 24h) ---
+        $cache_key = 'dss_gemini_models_' . md5($api_key);
+        $available_models = get_transient($cache_key);
 
-        if (!is_wp_error($list_response)) {
-            $list_data = json_decode(wp_remote_retrieve_body($list_response), true);
-            if (isset($list_data['models'])) {
-                foreach ($list_data['models'] as $m) {
-                    if (in_array('generateContent', $m['supportedGenerationMethods'])) {
-                        // Prioritize 2.0 and 1.5 models
-                        if (strpos($m['name'], 'gemini-1.5') !== false || strpos($m['name'], 'gemini-2.0') !== false) {
-                            array_unshift($available_models, $m['name']);
-                        } else {
-                            $available_models[] = $m['name'];
+        if (false === $available_models) {
+            $available_models = array();
+            $list_url = "https://generativelanguage.googleapis.com/v1beta/models?key=" . $api_key;
+            $list_response = wp_remote_get($list_url);
+
+            if (!is_wp_error($list_response)) {
+                $list_data = json_decode(wp_remote_retrieve_body($list_response), true);
+                if (isset($list_data['models'])) {
+                    foreach ($list_data['models'] as $m) {
+                        if (in_array('generateContent', $m['supportedGenerationMethods'])) {
+                            // Prioritize 2.0 and 1.5 models
+                            if (strpos($m['name'], 'gemini-1.5') !== false || strpos($m['name'], 'gemini-2.0') !== false) {
+                                array_unshift($available_models, $m['name']);
+                            } else {
+                                $available_models[] = $m['name'];
+                            }
                         }
                     }
                 }
             }
-        }
 
-        // Fallback if discovery fails
-        if (empty($available_models)) {
-            $available_models = array('models/gemini-1.5-flash', 'models/gemini-pro');
+            if (empty($available_models)) {
+                $available_models = array('models/gemini-1.5-flash', 'models/gemini-pro');
+            }
+
+            set_transient($cache_key, $available_models, DAY_IN_SECONDS);
         }
 
         $reply = '';

@@ -137,6 +137,12 @@ class FFL_Admin_Theme_Widgets
 
     private function get_sales_data($period)
     {
+        $cache_key = 'dss_sales_' . $period;
+        $cached = get_transient($cache_key);
+        if (false !== $cached) {
+            return $cached;
+        }
+
         global $wpdb;
 
         switch ($period) {
@@ -183,10 +189,16 @@ class FFL_Admin_Theme_Widgets
             ));
         }
 
-        return array(
+        $data = array(
             'total' => $results ? (float) $results->total : 0,
             'count' => $results ? (int) $results->count : 0,
         );
+
+        // Today: 5 min cache. Week/month: 15 min (cambian menos)
+        $expiry = ($period === 'today') ? 5 * MINUTE_IN_SECONDS : 15 * MINUTE_IN_SECONDS;
+        set_transient($cache_key, $data, $expiry);
+
+        return $data;
     }
 
     private function get_orders_count($status)
@@ -382,8 +394,7 @@ class FFL_Admin_Theme_Widgets
         // For simplicity and to not impact performance heavily on every page load, we check WooCommerce sessions if available. 
         global $wpdb;
         if (class_exists('WooCommerce')) {
-            // Count active WC sessions in the last 15 minutes
-            $recent_timestamp = time() - (15 * 60);
+            // Count active WC sessions not yet expired
             $sessions = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$wpdb->prefix}woocommerce_sessions WHERE session_expiry > %d", time()));
             if ($sessions) {
                 return $sessions;

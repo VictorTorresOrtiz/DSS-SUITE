@@ -96,10 +96,8 @@ class DSS_Suite_Core
             }
 
             if ($input_key === DSS_MASTER_KEY) {
-                if (!session_id()) {
-                    session_start();
-                }
-                $_SESSION['dss_suite_authorized'] = true;
+                $transient_key = 'dss_auth_' . get_current_user_id();
+                set_transient($transient_key, true, 8 * HOUR_IN_SECONDS);
                 wp_safe_redirect(add_query_arg('unlocked', '1', wp_get_referer()));
                 exit;
             } else {
@@ -109,14 +107,12 @@ class DSS_Suite_Core
     }
 
     /**
-     * Check if the current session is authorized to view protected pages.
+     * Check if the current user is authorized to view protected pages.
      */
     private function is_panel_authorized()
     {
-        if (!session_id()) {
-            session_start();
-        }
-        return isset($_SESSION['dss_suite_authorized']) && $_SESSION['dss_suite_authorized'] === true;
+        $transient_key = 'dss_auth_' . get_current_user_id();
+        return (bool) get_transient($transient_key);
     }
 
     /**
