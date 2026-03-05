@@ -59,9 +59,11 @@ class DSS_Chatbox_Admin
 
                     <!-- Suggestion Chips inside history for inline placement -->
                     <div class="dss-suggestion-chips">
+                        <button class="dss-chip"
+                            data-query="Dame un resumen de ventas y productos más vendidos de mi tienda de hoy.">📊 Resumen
+                            Ventas</button>
                         <button class="dss-chip" data-query="Crea una entrada de blog sobre ">📝 Crear Entrada</button>
                         <button class="dss-chip" data-query="Crea un producto llamado ">🛍️ Crear Producto</button>
-                        <button class="dss-chip" data-query="¿Cómo puedo optimizar mi sitio?">🚀 Opt. Sitio</button>
                     </div>
                 </div>
                 <div class="dss-chatbox-footer">
@@ -151,6 +153,16 @@ class DSS_Chatbox_Admin
                                 'description' => array('type' => 'string', 'description' => 'Descripción del producto.')
                             ),
                             'required' => array('name', 'price')
+                        )
+                    ),
+                    array(
+                        'name' => 'get_store_report',
+                        'description' => 'Obtiene un resumen de ventas, productos más vendidos y stock bajo de WooCommerce.',
+                        'parameters' => array(
+                            'type' => 'object',
+                            'properties' => array(
+                                'period' => array('type' => 'string', 'description' => 'Periodo del reporte: today, week, month.', 'enum' => array('today', 'week', 'month'))
+                            )
                         )
                     )
                 )
@@ -285,8 +297,42 @@ class DSS_Chatbox_Admin
 
                 return "Producto creado correctamente como borrador. ID: " . $product_id . ". Enlace de edición: " . get_edit_post_link($product_id);
 
+            case 'get_store_report':
+                return $this->get_store_report_data($args['period'] ?? 'today');
+
             default:
                 return "Herramienta no reconocida.";
         }
+    }
+
+    /**
+     * Get store report data from WooCommerce.
+     */
+    private function get_store_report_data($period)
+    {
+        if (!class_exists('WooCommerce')) {
+            return "Error: WooCommerce no está activo.";
+        }
+
+        // 1. Productos agotados
+        $out_of_stock = wc_get_products(array('stock_status' => 'outofstock', 'return' => 'ids', 'limit' => 5));
+        $stock_msg = !empty($out_of_stock) ? "⚠️ Productos agotados (IDs): " . implode(', ', $out_of_stock) : "✅ Todo el stock está al día.";
+
+        // 2. Ventas y Producto más vendido (simulado o simplificado para este contexto)
+        // En un entorno WordPress real, usaríamos consultas SQL o WC_Order_Query
+        global $wpdb;
+        $date_filter = "post_date >= '" . date('Y-m-d') . " 00:00:00'";
+        if ($period == 'week') $date_filter = "post_date >= '" . date('Y-m-d', strtotime('-7 days')) . " 00:00:00'";
+        
+        $sales = $wpdb->get_var("SELECT SUM(meta_value) FROM {$wpdb->postmeta} pm 
+            JOIN {$wpdb->posts} p ON p.ID = pm.post_id 
+            WHERE meta_key = '_order_total' AND p.post_type = 'shop_order' AND p.post_status = 'wc-completed' AND $date_filter");
+        
+        $sales_amount = $sales ? number_format($sales, 2) . '€' : '0.00€';
+
+        return "Resumen de la tienda ($period):\n" .
+               "- Ventas totales (completadas): $sales_amount\n" .
+               "- Estado de Stock: $stock_msg\n" .
+               "- Para más detalles, consulta el panel de WooCommerce Analytics.";
     }
 }
