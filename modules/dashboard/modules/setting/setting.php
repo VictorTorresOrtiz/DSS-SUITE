@@ -17,7 +17,7 @@ class FFL_Admin_Theme_Setting
 	, $plugin_path
 	, $plugin_file
 	, $plugin_post = 'options.php'
-	, public $active
+	, $active
 	;
 	function __construct($arg)
 	{
