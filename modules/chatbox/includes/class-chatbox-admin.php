@@ -46,12 +46,17 @@ class DSS_Chatbox_Admin
             </div>
             <div id="dss-chatbox-window">
                 <div class="dss-chatbox-header">
-                    <h3>Soporte Inteligente DSS</h3>
+                    <div class="dss-header-title">
+                        <img src="<?php echo DSS_CHATBOX_URL . 'assets/images/dss-logo.svg'; ?>" alt="DSS Logo"
+                            class="dss-chatbox-logo">
+                        <h3>Asistente personal DSS Network</h3>
+                    </div>
                     <button id="dss-chatbox-close">&times;</button>
                 </div>
                 <div id="dss-chatbox-history" class="dss-chatbox-body">
-                    <div class="dss-message dss-bot-message">¡Hola! Soy el asistente de DSS NETWORK. ¿En qué puedo ayudarte hoy?</div>
-                    
+                    <div class="dss-message dss-bot-message">¡Hola! Soy el asistente de DSS NETWORK. ¿En qué puedo ayudarte hoy?
+                    </div>
+
                     <!-- Suggestion Chips inside history for inline placement -->
                     <div class="dss-suggestion-chips">
                         <button class="dss-chip" data-query="Crea una entrada de blog sobre ">📝 Crear Entrada</button>

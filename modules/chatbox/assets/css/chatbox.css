@@ -72,9 +72,24 @@
 
 .dss-chatbox-header h3 {
     margin: 0;
-    font-size: 16px;
+    font-size: 14px;
     color: #fff;
     font-weight: 700;
+}
+
+.dss-header-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.dss-chatbox-logo {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    background: #fff;
+    border-radius: 4px;
+    padding: 2px;
 }
 
 #dss-chatbox-close {
