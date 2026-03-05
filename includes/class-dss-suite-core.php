@@ -35,6 +35,11 @@ class DSS_Suite_Core
             'name' => 'CPT Sorter',
             'description' => 'Habilita ordenamiento manual (Drag & Drop) para los cpt de themerex u otros temas.',
             'file' => 'cpt-sorter/function.php',
+        ),
+        'chatbox' => array(
+            'name' => 'Chatbox de Soporte',
+            'description' => 'Añade un chatbox moderno en el área de administración para consultas de clientes.',
+            'file' => 'chatbox/chatbox.php',
         )
     );
 

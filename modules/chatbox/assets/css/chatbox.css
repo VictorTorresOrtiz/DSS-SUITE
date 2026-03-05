@@ -1,0 +1,162 @@
+#dss-chatbox-container {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 10000;
+}
+
+/* Floating Button */
+#dss-chatbox-button {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #0073aa 0%, #005177 100%);
+    border-radius: 50%;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+}
+
+#dss-chatbox-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+#dss-chatbox-button .dashicons {
+    font-size: 30px;
+    width: 30px;
+    height: 30px;
+}
+
+/* Chat Window */
+#dss-chatbox-window {
+    position: absolute;
+    bottom: 80px;
+    right: 0;
+    width: 320px;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transform: translateY(20px) scale(0.9);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dss-chatbox-active #dss-chatbox-window {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Header */
+.dss-chatbox-header {
+    background: linear-gradient(135deg, #0073aa 0%, #005177 100%);
+    padding: 15px 20px;
+    color: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dss-chatbox-header h3 {
+    margin: 0;
+    font-size: 16px;
+    color: #fff;
+    font-weight: 600;
+}
+
+#dss-chatbox-close {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 24px;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+#dss-chatbox-close:hover {
+    color: #fff;
+}
+
+/* Body */
+.dss-chatbox-body {
+    padding: 20px;
+}
+
+.dss-chatbox-body p {
+    font-size: 14px;
+    color: #333;
+    line-height: 1.5;
+    margin-bottom: 20px;
+}
+
+/* Form */
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.5);
+    font-size: 13px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #0073aa;
+    box-shadow: 0 0 0 3px rgba(0, 115, 170, 0.1);
+}
+
+.form-group textarea {
+    height: 100px;
+    resize: none;
+}
+
+#dss-chatbox-form .button-primary {
+    width: 100%;
+    height: 40px;
+    font-weight: 600;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+#dss-chatbox-form .button-primary:active {
+    transform: scale(0.98);
+}
+
+/* Response */
+#dss-chatbox-response {
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    text-align: center;
+}
+
+.dss-response-success {
+    background: rgba(70, 180, 80, 0.1);
+    color: #2b7a3a;
+    border: 1px solid rgba(70, 180, 80, 0.2);
+}
+
+.dss-response-error {
+    background: rgba(220, 50, 50, 0.1);
+    color: #b32d2e;
+    border: 1px solid rgba(220, 50, 50, 0.2);
+}
