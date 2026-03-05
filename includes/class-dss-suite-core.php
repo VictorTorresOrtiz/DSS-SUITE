@@ -179,9 +179,12 @@ class DSS_Suite_Core
      */
     public function register_settings()
     {
+        // Group for Module Activation
         register_setting('dss_suite_options_group', 'dss_suite_active_modules');
-        register_setting('dss_suite_options_group', 'dss_suite_gemini_api_key');
-        register_setting('dss_suite_options_group', 'dss_suite_invoice_number');
+
+        // Group for AI & License
+        register_setting('dss_suite_ai_options_group', 'dss_suite_gemini_api_key');
+        register_setting('dss_suite_ai_options_group', 'dss_suite_invoice_number');
     }
 
     /**
