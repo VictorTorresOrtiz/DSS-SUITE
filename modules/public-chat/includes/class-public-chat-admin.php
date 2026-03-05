@@ -31,14 +31,38 @@ class DSS_Public_Chat_Admin
     /**
      * Enqueue admin assets.
      */
-    public function enqueue_admin_assets($hook)
-    {
-        if ('dss-suite_page_dss-public-chat' !== $hook) {
-            return;
-        }
-        wp_enqueue_media();
-        wp_enqueue_style('dss-public-chat-admin-style', DSS_PUBLIC_CHAT_URL . 'assets/css/public-chat-admin.css', array(), DSS_PUBLIC_CHAT_VERSION);
         wp_enqueue_script('dss-public-chat-admin-js', DSS_PUBLIC_CHAT_URL . 'assets/js/public-chat-admin.js', array('jquery'), DSS_PUBLIC_CHAT_VERSION, true);
+
+        // Pass Dashicons list to JS
+        wp_localize_script('dss-public-chat-admin-js', 'dssAdminIcons', array(
+            'icons' => $this->get_dashicons_list()
+        ));
+    }
+
+    /**
+     * Get a list of common Dashicons for the select menu.
+     */
+    private function get_dashicons_list()
+    {
+        return array(
+            'dashicons-format-chat' => 'Burbuja Chat',
+            'dashicons-admin-comments' => 'Comentarios',
+            'dashicons-smiley' => 'Cara Sonriente',
+            'dashicons-info' => 'Información',
+            'dashicons-welcome-learn-more' => 'Leer más',
+            'dashicons-email-alt' => 'Email',
+            'dashicons-phone' => 'Teléfono',
+            'dashicons-whatsapp' => 'WhatsApp',
+            'dashicons-admin-users' => 'Usuarios',
+            'dashicons-cart' => 'Carrito',
+            'dashicons-sos' => 'Ayuda/SOS',
+            'dashicons-lightbulb' => 'Idea/Luz',
+            'dashicons-star-filled' => 'Estrella',
+            'dashicons-calendar-alt' => 'Calendario',
+            'dashicons-location-alt' => 'Ubicación',
+            'dashicons-megaphone' => 'Megáfono',
+            'dashicons-money-alt' => 'Precio/Dinero',
+        );
     }
 
     /**
@@ -143,32 +167,36 @@ class DSS_Public_Chat_Admin
                     </div>
 
                     <div class="dss-shortcuts-grid">
-                        <?php if (!empty($shortcuts)): ?>
+                        <?php 
+                        $icon_list = $this->get_dashicons_list();
+                        if (!empty($shortcuts)): 
+                        ?>
                             <?php foreach ($shortcuts as $index => $shortcut): ?>
                                 <div class="dss-shortcut-card">
                                     <button type="button" class="dss-remove-shortcut">&times;</button>
                                     <div class="dss-shortcut-inputs">
                                         <div class="dss-form-group-inline">
-                                            <label>Icono (Dashicon)</label>
-                                            <input type="text" name="dss_public_chat_shortcuts[<?php echo $index; ?>][icon]"
-                                                placeholder="dashicons-star-filled"
-                                                value="<?php echo esc_attr($shortcut['icon'] ?? ''); ?>">
+                                            <label>Icono</label>
+                                            <select name="dss_public_chat_shortcuts[<?php echo $index; ?>][icon]">
+                                                <option value="">Ninguno</option>
+                                                <?php foreach ($icon_list as $value => $label): ?>
+                                                    <option value="<?php echo esc_attr($value); ?>" <?php selected($shortcut['icon'] ?? '', $value); ?>>
+                                                        <?php echo esc_html($label); ?>
+                                                    </option>
+                                                <?php endforeach; ?>
+                                            </select>
                                         </div>
                                         <div class="dss-form-group-inline">
-                                            <label>Etiqueta del Botón</label>
+                                            <label>Etiqueta</label>
                                             <input type="text" name="dss_public_chat_shortcuts[<?php echo $index; ?>][label]"
-                                                placeholder="Título (ej: Hola)" value="<?php echo esc_attr($shortcut['label']); ?>">
+                                                placeholder="Título" value="<?php echo esc_attr($shortcut['label']); ?>">
                                         </div>
                                     </div>
                                     <div class="dss-form-group">
-                                        <label>Mensaje / Consulta (Prompt)</label>
+                                        <label>Mensaje (Prompt)</label>
                                         <input type="text" name="dss_public_chat_shortcuts[<?php echo $index; ?>][query]"
-                                            placeholder="Prompt (ej: Hola, ¿cómo estás?)"
-                                            value="<?php echo esc_attr($shortcut['query']); ?>">
+                                            placeholder="Prompt" value="<?php echo esc_attr($shortcut['query']); ?>">
                                     </div>
-                                    <p class="dss-help-text">Busca iconos en la <a
-                                            href="https://developer.wordpress.org/resource/dashicons/" target="_blank">Librería de
-                                            Dashicons</a>.</p>
                                 </div>
                             <?php endforeach; ?>
                         <?php endif; ?>

@@ -49,13 +49,15 @@
 
 .dss-form-group textarea, 
 .dss-form-group input[type="text"],
-.dss-form-group input[type="password"] {
+.dss-form-group input[type="password"],
+.dss-form-group select {
     width: 100%;
     border: 1px solid #cbd5e1;
     border-radius: 8px;
     padding: 12px;
     font-size: 14px;
     transition: border-color 0.2s;
+    background: #fff;
 }
 
 .dss-form-group textarea:focus, 
@@ -92,21 +94,36 @@
 
 /* Shortcuts Section */
 .dss-shortcuts-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 15px;
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 20px;
     margin-bottom: 20px;
+    padding: 15px 5px;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+}
+
+.dss-shortcuts-grid::-webkit-scrollbar {
+    height: 6px;
+}
+
+.dss-shortcuts-grid::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
 }
 
 .dss-shortcut-card {
     background: #f8fafc;
     border: 1px solid #e2e8f0;
     border-radius: 10px;
-    padding: 15px;
+    padding: 20px;
     position: relative;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 15px;
+    min-width: 320px;
+    flex-shrink: 0;
 }
 
 .dss-shortcut-card .dss-remove-shortcut {
@@ -164,4 +181,13 @@
     text-transform: uppercase;
     color: #94a3b8;
     margin-bottom: 4px;
+}
+
+.dss-form-group-inline select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 13px;
+    background: #fff;
 }
