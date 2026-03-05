@@ -49,7 +49,7 @@ class DSS_Chatbox_Admin
                     <div class="dss-header-title">
                         <img src="<?php echo DSS_CHATBOX_URL . 'assets/images/dss-logo.svg'; ?>" alt="DSS Logo"
                             class="dss-chatbox-logo">
-                        <h3>Asistente personal DSS Network</h3>
+                        <h3>Asistente personal</h3>
                     </div>
                     <button id="dss-chatbox-close">&times;</button>
                 </div>
@@ -59,11 +59,15 @@ class DSS_Chatbox_Admin
 
                     <!-- Suggestion Chips inside history for inline placement -->
                     <div class="dss-suggestion-chips">
-                        <button class="dss-chip"
-                            data-query="Dame un resumen de ventas y productos más vendidos de mi tienda de hoy.">📊 Resumen
-                            Ventas</button>
+                        <?php if (class_exists('WooCommerce')): ?>
+                            <button class="dss-chip" data-query="Dame un resumen de ventas y productos más vendidos de mi tienda de hoy.">📊 Resumen Ventas</button>
+                        <?php endif; ?>
+
                         <button class="dss-chip" data-query="Crea una entrada de blog sobre ">📝 Crear Entrada</button>
-                        <button class="dss-chip" data-query="Crea un producto llamado ">🛍️ Crear Producto</button>
+
+                        <?php if (class_exists('WooCommerce')): ?>
+                            <button class="dss-chip" data-query="Crea un producto llamado ">🛍️ Crear Producto</button>
+                        <?php endif; ?>
                     </div>
                 </div>
                 <div class="dss-chatbox-footer">
