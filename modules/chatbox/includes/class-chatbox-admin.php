@@ -119,8 +119,12 @@ class DSS_Chatbox_Admin
         if (isset($data['candidates'][0]['content']['parts'][0]['text'])) {
             $reply = $data['candidates'][0]['content']['parts'][0]['text'];
             wp_send_json_success(array('reply' => $reply));
+        } elseif (isset($data['error']['message'])) {
+            wp_send_json_error(array('message' => 'Error de Gemini: ' . $data['error']['message']));
         } else {
-            wp_send_json_error(array('message' => 'La IA no pudo procesar tu solicitud actualmente.'));
+            // Log generic error for debugging
+            error_log('Gemini API Error Response: ' . print_r($data, true));
+            wp_send_json_error(array('message' => 'La IA no pudo procesar tu solicitud. Revisa tu API Key o los filtros de seguridad.'));
         }
     }
 }
