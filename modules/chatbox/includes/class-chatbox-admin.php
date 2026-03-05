@@ -91,40 +91,57 @@ class DSS_Chatbox_Admin
 		Sé amable, profesional y conciso. Si no sabes algo, sugiere contactar a v.torres@dssnetwork.es.
 		Habla siempre en español.";
 
-        $url = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=" . $api_key;
+        // Intentamos con varios modelos por si alguno no está disponible para esta key
+        $models = array('gemini-1.5-flash', 'gemini-pro', 'gemini-1.0-pro');
+        $reply = '';
+        $last_error = '';
 
-        $body = array(
-            'contents' => array(
-                array(
-                    'role' => 'user',
-                    'parts' => array(
-                        array('text' => "Instrucciones de sistema: " . $system_prompt . "\n\nPregunta del cliente: " . $message)
+        foreach ($models as $model) {
+            $url = "https://generativelanguage.googleapis.com/v1beta/models/" . $model . ":generateContent?key=" . $api_key;
+
+            $body = array(
+                'contents' => array(
+                    array(
+                        'role' => 'user',
+                        'parts' => array(
+                            array('text' => "Instrucciones de sistema: " . $system_prompt . "\n\nPregunta del cliente: " . $message)
+                        )
                     )
                 )
-            )
-        );
+            );
 
-        $response = wp_remote_post($url, array(
-            'body' => json_encode($body),
-            'headers' => array('Content-Type' => 'application/json'),
-            'timeout' => 30
-        ));
+            $response = wp_remote_post($url, array(
+                'body' => json_encode($body),
+                'headers' => array('Content-Type' => 'application/json'),
+                'timeout' => 30
+            ));
 
-        if (is_wp_error($response)) {
-            wp_send_json_error(array('message' => 'Error de conexión con la IA.'));
+            if (is_wp_error($response)) {
+                $last_error = 'Error de conexión con la IA.';
+                continue;
+            }
+
+            $data = json_decode(wp_remote_retrieve_body($response), true);
+
+            if (isset($data['candidates'][0]['content']['parts'][0]['text'])) {
+                $reply = $data['candidates'][0]['content']['parts'][0]['text'];
+                break; // ¡Encontrado y funcionando!
+            } elseif (isset($data['error']['message'])) {
+                $last_error = $data['error']['message'];
+                // Si el error es que no encuentra el modelo, seguimos probando el siguiente
+                if (strpos($last_error, 'not found') !== false || strpos($last_error, 'not supported') !== false) {
+                    continue;
+                } else {
+                    // Si es otro tipo de error (key inválida, cuota, etc.), paramos
+                    wp_send_json_error(array('message' => 'Error de Gemini: ' . $last_error));
+                }
+            }
         }
 
-        $data = json_decode(wp_remote_retrieve_body($response), true);
-
-        if (isset($data['candidates'][0]['content']['parts'][0]['text'])) {
-            $reply = $data['candidates'][0]['content']['parts'][0]['text'];
+        if (!empty($reply)) {
             wp_send_json_success(array('reply' => $reply));
-        } elseif (isset($data['error']['message'])) {
-            wp_send_json_error(array('message' => 'Error de Gemini: ' . $data['error']['message']));
         } else {
-            // Log generic error for debugging
-            error_log('Gemini API Error Response: ' . print_r($data, true));
-            wp_send_json_error(array('message' => 'La IA no pudo procesar tu solicitud. Revisa tu API Key o los filtros de seguridad.'));
+            wp_send_json_error(array('message' => 'No se pudo conectar con ningún modelo de IA. Error: ' . $last_error));
         }
     }
 }
