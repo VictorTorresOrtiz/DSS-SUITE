@@ -39,6 +39,14 @@ jQuery(document).ready(function ($) {
     $imageUpload.val("");
   });
 
+  // Send message on Enter
+  $form.find("textarea").on("keydown", function (e) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      $form.submit();
+    }
+  });
+
   // Send message
   $form.on("submit", function (e) {
     e.preventDefault();

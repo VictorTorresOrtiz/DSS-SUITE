@@ -47,6 +47,7 @@ class DSS_Public_Chat_Admin
         register_setting('dss_public_chat_group', 'dss_public_chat_prompt');
         register_setting('dss_public_chat_group', 'dss_public_chat_shortcuts');
         register_setting('dss_public_chat_group', 'dss_public_chat_logo');
+        register_setting('dss_public_chat_group', 'dss_public_chat_api_key');
     }
 
     /**
@@ -85,6 +86,15 @@ class DSS_Public_Chat_Admin
                             <textarea name="dss_public_chat_prompt" id="dss_public_chat_prompt" rows="5"
                                 class="large-text"><?php echo esc_textarea($prompt); ?></textarea>
                             <p class="description">Define cómo debe comportarse el bot con los visitantes de la web.</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="dss_public_chat_api_key">Gemini API Key</label></th>
+                        <td>
+                            <input type="password" name="dss_public_chat_api_key" id="dss_public_chat_api_key"
+                                value="<?php echo esc_attr(get_option('dss_public_chat_api_key')); ?>" class="regular-text">
+                            <p class="description">Introduce la API Key específica para el chat público. Deja en blanco si
+                                deseas usar la global de DSS Suite.</p>
                         </td>
                     </tr>
                     <tr>
@@ -239,8 +249,14 @@ class DSS_Public_Chat_Admin
         check_ajax_referer('dss_public_chat_nonce', 'nonce');
 
         $message = sanitize_text_field($_POST['message']);
-        $api_key = get_option('dss_suite_gemini_api_key');
-        $system_prompt = get_option('dss_public_chat_prompt', 'Eres un asistente amable...');
+        $api_key = get_option('dss_public_chat_api_key');
+
+        // Fallback to global key if specific one is empty
+        if (empty($api_key)) {
+            $api_key = get_option('dss_suite_gemini_api_key');
+        }
+
+        $system_prompt = get_option('dss_public_chat_prompt', 'Eres un asistente amable de ' . get_bloginfo('name') . '...');
 
         if (empty($api_key)) {
             wp_send_json_error(array('message' => 'API Key no configurada.'));
