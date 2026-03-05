@@ -68,7 +68,8 @@ class DSS_Chatbox_Admin
                     <form id="dss-chatbox-form">
                         <textarea name="chat_message" placeholder="Escribe tu duda aquí..." required></textarea>
                         <button type="submit" id="dss-chat-send">
-                            <span class="dashicons dashicons-send"></span>
+                            <img src="<?php echo DSS_CHATBOX_URL . 'assets/images/enviar.gif'; ?>" alt="Enviar"
+                                class="dss-send-gif">
                         </button>
                     </form>
                 </div>
