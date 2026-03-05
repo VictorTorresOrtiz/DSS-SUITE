@@ -25,6 +25,9 @@ class DSS_Chatbox_Admin
      */
     public function enqueue_assets()
     {
+        if (!current_user_can('manage_options')) {
+            return;
+        }
         wp_enqueue_style('dss-chatbox-style', DSS_SUITE_PLUGIN_URL . 'modules/chatbox/assets/css/chatbox.css', array('dashicons'), DSS_CHATBOX_VERSION);
         wp_enqueue_script('dss-chatbox-script', DSS_SUITE_PLUGIN_URL . 'modules/chatbox/assets/js/chatbox.js', array('jquery'), DSS_CHATBOX_VERSION, true);
 
@@ -39,6 +42,9 @@ class DSS_Chatbox_Admin
      */
     public function render_chatbox()
     {
+        if (!current_user_can('manage_options')) {
+            return;
+        }
         ?>
         <div id="dss-chatbox-container">
             <div id="dss-chatbox-button">
@@ -91,6 +97,10 @@ class DSS_Chatbox_Admin
     {
         check_ajax_referer('dss_chatbox_nonce', 'nonce');
 
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(array('message' => 'Permisos insuficientes.'));
+        }
+
         $message = isset($_POST['chat_message']) ? sanitize_textarea_field($_POST['chat_message']) : '';
         $api_key = get_option('dss_suite_gemini_api_key');
 
@@ -103,8 +113,10 @@ class DSS_Chatbox_Admin
         }
 
         // System Prompt
+        $invoice_number = get_option('dss_suite_invoice_number', 'N/A');
         $system_prompt = "Asistente experto de soporte para DSS NETWORK (https://dssnetwork.es). 
         Tu objetivo es ayudar a los clientes con dudas sobre WordPress, servicios de DSS y soporte técnico. 
+        IMPORTANTE: El número de factura asociado a esta licencia es: " . $invoice_number . ". Úsalo si el cliente pregunta por su factura o licencia.
         Sé amable, profesional y proporciona respuestas completas y detalladas. 
         Si no estás seguro de algo, sugiere contactar a v.torres@dssnetwork.es. Idioma: Español.";
 

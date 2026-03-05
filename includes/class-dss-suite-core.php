@@ -37,12 +37,12 @@ class DSS_Suite_Core
             'file' => 'cpt-sorter/function.php',
         ),
         'chatbox' => array(
-            'name' => 'Chatbox de Soporte',
+            'name' => 'Chatbox de Soporte (Premium)',
             'description' => 'Añade un chatbox moderno en el área de administración para consultas de clientes.',
             'file' => 'chatbox/chatbox.php',
         ),
         'public-chat' => array(
-            'name' => 'Chat Público (Web)',
+            'name' => 'Chat Público Beta (Premium)',
             'description' => 'Chatbot flotante para la parte pública con soporte de fotos y prompts personalizados.',
             'file' => 'public-chat/public-chat.php',
         )
@@ -84,6 +84,7 @@ class DSS_Suite_Core
     {
         register_setting('dss_suite_options_group', 'dss_suite_active_modules');
         register_setting('dss_suite_options_group', 'dss_suite_gemini_api_key');
+        register_setting('dss_suite_options_group', 'dss_suite_invoice_number');
     }
 
     /**
@@ -173,6 +174,16 @@ class DSS_Suite_Core
                                     class="regular-text">
                                 <p class="description">Puedes obtener una clave gratuita en <a
                                         href="https://aistudio.google.com/" target="_blank">Google AI Studio</a>.</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="dss_suite_invoice_number">Número de Factura (Premium)</label></th>
+                            <td>
+                                <input type="text" name="dss_suite_invoice_number" id="dss_suite_invoice_number"
+                                    value="<?php echo esc_attr(get_option('dss_suite_invoice_number')); ?>"
+                                    class="regular-text">
+                                <p class="description">Asocia estos módulos premium a un número de factura para soporte técnico
+                                    personalizado.</p>
                             </td>
                         </tr>
                     </table>

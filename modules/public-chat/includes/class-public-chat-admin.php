@@ -71,6 +71,9 @@ class DSS_Public_Chat_Admin
      */
     public function render_settings_page()
     {
+        if (!current_user_can('manage_options')) {
+            return;
+        }
         $prompt = get_option('dss_public_chat_prompt', 'Eres un asistente amable de ' . get_bloginfo('name') . '...');
         $shortcuts = get_option('dss_public_chat_shortcuts', array());
         ?>
