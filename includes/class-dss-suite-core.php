@@ -252,9 +252,10 @@ class DSS_Suite_Core
                             <?php $is_checked = isset($active_modules[$slug]) && $active_modules[$slug] === '1'; ?>
                             <tr>
                                 <td>
-                                    <label class="switch dss-switch">
+                                    <label class="dss-switch">
                                         <input type="checkbox" name="dss_suite_active_modules[<?php echo esc_attr($slug); ?>]"
                                             value="1" <?php checked($is_checked, true); ?>>
+                                        <span class="dss-slider"></span>
                                     </label>
                                 </td>
                                 <td><strong><?php echo esc_html($module['name']); ?></strong></td>
@@ -332,39 +333,49 @@ class DSS_Suite_Core
     {
         ?>
         <style>
-            .dss-switch input[type=checkbox] {
-                width: 40px;
-                height: 20px;
-                appearance: none;
-                background: #ccc;
-                outline: none;
-                border-radius: 20px;
-                box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
-                transition: 0.5s;
+            .dss-switch {
                 position: relative;
-                cursor: pointer;
+                display: inline-block;
+                width: 44px;
+                height: 24px;
             }
 
-            .dss-switch input:checked[type=checkbox] {
-                background: #2271b1;
+            .dss-switch input {
+                opacity: 0;
+                width: 0;
+                height: 0;
             }
 
-            .dss-switch input[type=checkbox]:before {
-                content: '';
+            .dss-slider {
                 position: absolute;
-                width: 20px;
-                height: 20px;
-                border-radius: 50%;
+                cursor: pointer;
                 top: 0;
                 left: 0;
-                background: #fff;
-                transform: scale(0.9);
-                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-                transition: 0.5s;
+                right: 0;
+                bottom: 0;
+                background-color: #cbd5e1;
+                transition: .4s;
+                border-radius: 24px;
             }
 
-            .dss-switch input:checked[type=checkbox]:before {
-                left: 20px;
+            .dss-slider:before {
+                position: absolute;
+                content: "";
+                height: 18px;
+                width: 18px;
+                left: 3px;
+                bottom: 3px;
+                background-color: white;
+                transition: .4s;
+                border-radius: 50%;
+            }
+
+            input:checked+.dss-slider {
+                background-color: #2271b1;
+            }
+
+            input:checked+.dss-slider:before {
+                transform: translateX(20px);
             }
         </style>
         <?php
