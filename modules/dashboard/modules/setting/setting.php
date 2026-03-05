@@ -218,6 +218,12 @@ class FFL_Admin_Theme_Setting
 
 	function admin_screen()
 	{
+		if (isset($_GET['settings-updated']) && $_GET['settings-updated'] == 'true') {
+			if (class_exists('DSS_Notifications')) {
+				DSS_Notifications::get_instance()->add_persistent('Los ajustes del Dashboard se han guardado correctamente.', 'success', 'Diseño Actualizado');
+			}
+		}
+
 		do_action('admin_screen_start');
 		include 'tpl-redesign.php';
 		do_action('admin_screen_end');
