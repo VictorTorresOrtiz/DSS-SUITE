@@ -1,0 +1,153 @@
+/* Admin CSS for Public Chat Module */
+.dss-public-chat-admin-wrap {
+    max-width: 1000px;
+    margin-top: 20px;
+}
+
+.dss-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    padding: 30px;
+    margin-bottom: 25px;
+}
+
+.dss-card-header {
+    margin-bottom: 25px;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 15px;
+}
+
+.dss-card-header h2 {
+    margin: 0;
+    font-size: 20px;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.dss-card-header h2 .dashicons {
+    color: #2271b1;
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+}
+
+.dss-form-group {
+    margin-bottom: 20px;
+}
+
+.dss-form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #334155;
+    font-size: 14px;
+}
+
+.dss-form-group textarea, 
+.dss-form-group input[type="text"],
+.dss-form-group input[type="password"] {
+    width: 100%;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 14px;
+    transition: border-color 0.2s;
+}
+
+.dss-form-group textarea:focus, 
+.dss-form-group input:focus {
+    border-color: #2271b1;
+    box-shadow: 0 0 0 1px #2271b1;
+    outline: none;
+}
+
+/* Logo Section */
+.dss-logo-config {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+}
+
+.dss-logo-preview-wrapper {
+    width: 120px;
+    height: 120px;
+    background: #f8fafc;
+    border: 2px dashed #e2e8f0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.dss-logo-preview-wrapper img {
+    max-width: 80%;
+    max-height: 80%;
+    object-fit: contain;
+}
+
+/* Shortcuts Section */
+.dss-shortcuts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.dss-shortcut-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 15px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.dss-shortcut-card .dss-remove-shortcut {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 24px;
+    height: 24px;
+    background: #ef4444;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.dss-shortcut-card:hover .dss-remove-shortcut {
+    opacity: 1;
+}
+
+.dss-shortcut-card input {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 13px;
+}
+
+.dss-add-button-container {
+    padding-top: 10px;
+}
+
+/* Specific help text */
+.dss-help-text {
+    margin-top: 6px;
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.4;
+}

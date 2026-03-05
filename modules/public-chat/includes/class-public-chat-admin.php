@@ -37,6 +37,8 @@ class DSS_Public_Chat_Admin
             return;
         }
         wp_enqueue_media();
+        wp_enqueue_style('dss-public-chat-admin-style', DSS_PUBLIC_CHAT_URL . 'assets/css/public-chat-admin.css', array(), DSS_PUBLIC_CHAT_VERSION);
+        wp_enqueue_script('dss-public-chat-admin-js', DSS_PUBLIC_CHAT_URL . 'assets/js/public-chat-admin.js', array('jquery'), DSS_PUBLIC_CHAT_VERSION, true);
     }
 
     /**
@@ -77,101 +79,96 @@ class DSS_Public_Chat_Admin
         $prompt = get_option('dss_public_chat_prompt', 'Eres un asistente amable de ' . get_bloginfo('name') . '...');
         $shortcuts = get_option('dss_public_chat_shortcuts', array());
         ?>
-        <div class="wrap">
+        <div class="wrap dss-public-chat-admin-wrap">
             <h1>Configuración del Chat Público</h1>
+            <p style="margin-bottom: 30px; color: #64748b;">Personaliza la experiencia del chatbot que verán tus visitantes en
+                el área pública.</p>
+
             <form method="post" action="options.php">
                 <?php settings_fields('dss_public_chat_group'); ?>
 
-                <table class="form-table">
-                    <tr>
-                        <th scope="row"><label for="dss_public_chat_prompt">Prompt Personalizado</label></th>
-                        <td>
-                            <textarea name="dss_public_chat_prompt" id="dss_public_chat_prompt" rows="5"
-                                class="large-text"><?php echo esc_textarea($prompt); ?></textarea>
-                            <p class="description">Define cómo debe comportarse el bot con los visitantes de la web.</p>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th scope="row"><label for="dss_public_chat_api_key">Gemini API Key</label></th>
-                        <td>
-                            <input type="password" name="dss_public_chat_api_key" id="dss_public_chat_api_key"
-                                value="<?php echo esc_attr(get_option('dss_public_chat_api_key')); ?>" class="regular-text">
-                            <p class="description">Introduce la API Key específica para el chat público. Deja en blanco si
-                                deseas usar la global de DSS Suite.</p>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th scope="row"><label for="dss_public_chat_logo">Logo del Chat</label></th>
-                        <td>
-                            <?php $logo_url = get_option('dss_public_chat_logo', DSS_PUBLIC_CHAT_URL . 'assets/images/dss-logo.svg'); ?>
-                            <div class="dss-logo-preview-wrapper" style="margin-bottom: 10px;">
-                                <img id="dss-logo-preview" src="<?php echo esc_url($logo_url); ?>"
-                                    style="max-width: 100px; border: 1px solid #ccc; border-radius: 50%; padding: 5px; background: #f0f0f0;">
+                <!-- Card 1: Comportamiento e IA -->
+                <div class="dss-card">
+                    <div class="dss-card-header">
+                        <h2><span class="dashicons dashicons-brain"></span> Identidad y Comportamiento</h2>
+                    </div>
+
+                    <div class="dss-form-group">
+                        <label for="dss_public_chat_prompt">Prompt del Sistema (Personalidad)</label>
+                        <textarea name="dss_public_chat_prompt" id="dss_public_chat_prompt" rows="6"
+                            placeholder="Ej: Eres un experto en marketing digital..."><?php echo esc_textarea($prompt); ?></textarea>
+                        <p class="dss-help-text">Instrucciones precisas para que la IA sepa cómo responder a tus clientes.</p>
+                    </div>
+
+                    <div class="dss-form-group">
+                        <label for="dss_public_chat_api_key">Gemini API Key (Específica)</label>
+                        <input type="password" name="dss_public_chat_api_key" id="dss_public_chat_api_key"
+                            value="<?php echo esc_attr(get_option('dss_public_chat_api_key')); ?>"
+                            placeholder="Deja vacío para usar la global">
+                        <p class="dss-help-text">Si quieres usar una cuenta de Google diferente para el chat público, indícala
+                            aquí.</p>
+                    </div>
+                </div>
+
+                <!-- Card 2: Apariencia -->
+                <div class="dss-card">
+                    <div class="dss-card-header">
+                        <h2><span class="dashicons dashicons-art"></span> Apariencia Visual</h2>
+                    </div>
+
+                    <div class="dss-form-group">
+                        <label>Avatar / Icono del Asistente</label>
+                        <div class="dss-logo-config">
+                            <div class="dss-logo-preview-wrapper">
+                                <?php $logo_url = get_option('dss_public_chat_logo', DSS_PUBLIC_CHAT_URL . 'assets/images/dss-logo.svg'); ?>
+                                <img id="dss-logo-preview" src="<?php echo esc_url($logo_url); ?>">
                             </div>
-                            <input type="hidden" name="dss_public_chat_logo" id="dss_public_chat_logo"
-                                value="<?php echo esc_url($logo_url); ?>">
-                            <button type="button" id="dss-select-logo" class="button">Seleccionar Logo</button>
-                            <p class="description">Elige el icono que aparecerá en el botón flotante y en la cabecera del chat.
-                            </p>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th scope="row">Atajos (Shortcuts)</th>
-                        <td id="dss-shortcuts-container">
-                            <div class="dss-shortcuts-list">
-                                <?php if (!empty($shortcuts)): ?>
-                                    <?php foreach ($shortcuts as $index => $shortcut): ?>
-                                        <div class="dss-shortcut-item"
-                                            style="margin-bottom: 10px; border: 1px solid #ccc; padding: 10px; border-radius: 5px;">
-                                            <input type="text" name="dss_public_chat_shortcuts[<?php echo $index; ?>][label]"
-                                                placeholder="Título (ej: Hola)" value="<?php echo esc_attr($shortcut['label']); ?>">
-                                            <input type="text" name="dss_public_chat_shortcuts[<?php echo $index; ?>][query]"
-                                                placeholder="Prompt (ej: Hola, ¿cómo estás?)"
-                                                value="<?php echo esc_attr($shortcut['query']); ?>" style="width: 300px;">
-                                            <button type="button" class="button dss-remove-shortcut">Eliminar</button>
-                                        </div>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
+                            <div>
+                                <input type="hidden" name="dss_public_chat_logo" id="dss_public_chat_logo"
+                                    value="<?php echo esc_url($logo_url); ?>">
+                                <button type="button" id="dss-select-logo" class="button button-secondary">Cambiar
+                                    Imagen</button>
+                                <p class="dss-help-text">Se recomienda una imagen circular de 512x512px.</p>
                             </div>
-                            <button type="button" id="dss-add-shortcut" class="button button-primary">Añadir Atajo</button>
-                        </td>
-                    </tr>
-                </table>
-                <?php submit_button(); ?>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Atajos Rápidos -->
+                <div class="dss-card">
+                    <div class="dss-card-header">
+                        <h2><span class="dashicons dashicons-external"></span> Atajos del Chat (Botones Rápidos)</h2>
+                        <p class="dss-help-text">Añade botones que el usuario puede pulsar para lanzar consultas automáticas.
+                        </p>
+                    </div>
+
+                    <div class="dss-shortcuts-grid">
+                        <?php if (!empty($shortcuts)): ?>
+                            <?php foreach ($shortcuts as $index => $shortcut): ?>
+                                <div class="dss-shortcut-card">
+                                    <button type="button" class="dss-remove-shortcut">&times;</button>
+                                    <input type="text" name="dss_public_chat_shortcuts[<?php echo $index; ?>][label]"
+                                        placeholder="Título (ej: Hola)" value="<?php echo esc_attr($shortcut['label']); ?>">
+                                    <input type="text" name="dss_public_chat_shortcuts[<?php echo $index; ?>][query]"
+                                        placeholder="Prompt (ej: Hola, ¿cómo estás?)"
+                                        value="<?php echo esc_attr($shortcut['query']); ?>">
+                                </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="dss-add-button-container">
+                        <button type="button" id="dss-add-shortcut" class="button">
+                            <span class="dashicons dashicons-plus-alt2" style="vertical-align: middle;"></span> Nuevo Atajo
+                        </button>
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px;">
+                    <?php submit_button('Guardar Toda la Configuración', 'primary', 'submit', true, array('style' => 'height: 45px; padding: 0 30px; font-weight: 600; border-radius: 8px;')); ?>
+                </div>
             </form>
         </div>
-        <script>
-            jQuery(document).ready(function ($) {
-                $('#dss-add-shortcut').on('click', function () {
-                    var index = $('.dss-shortcut-item').length;
-                    var html = '<div class="dss-shortcut-item" style="margin-bottom: 10px; border: 1px solid #ccc; padding: 10px; border-radius: 5px;">' +
-                        '<input type="text" name="dss_public_chat_shortcuts[' + index + '][label]" placeholder="Título">' +
-                        '<input type="text" name="dss_public_chat_shortcuts[' + index + '][query]" placeholder="Prompt" style="width: 300px;">' +
-                        '<button type="button" class="button dss-remove-shortcut">Eliminar</button>' +
-                        '</div>';
-                    $('.dss-shortcuts-list').append(html);
-                });
-                $(document).on('click', '.dss-remove-shortcut', function () {
-                    $(this).closest('.dss-shortcut-item').remove();
-                });
-
-                // Media Uploader for Logo
-                $('#dss-select-logo').on('click', function (e) {
-                    e.preventDefault();
-                    var frame = wp.media({
-                        title: 'Seleccionar Logo del Chat',
-                        button: { text: 'Usar este logo' },
-                        multiple: false
-                    });
-                    frame.on('select', function () {
-                        var attachment = frame.state().get('selection').first().toJSON();
-                        $('#dss-public-chat-logo').val(attachment.url);
-                        $('#dss-logo-preview').attr('src', attachment.url);
-                    });
-                    frame.open();
-                });
-            });
-        </script>
         <?php
     }
 
