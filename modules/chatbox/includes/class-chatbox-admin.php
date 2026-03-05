@@ -88,15 +88,35 @@ class DSS_Chatbox_Admin
         // System Prompt
         $system_prompt = "Asistente experto de DSS NETWORK (https://dssnetwork.es). Soporte WordPress y técnico. Sé amable, conciso y profesional. Si dudas, sugiere: v.torres@dssnetwork.es. Idioma: Español.";
 
-        // Intentamos con varios modelos por si la Key tiene restricciones
-        $models = array('gemini-1.5-flash', 'gemini-1.5-flash-latest', 'gemini-pro', 'gemini-1.0-pro');
+        // --- FASE DE DESCUBRIMIENTO DE MODELO ---
+        // Consultamos qué modelos están disponibles exactamente para esta API Key
+        $list_url = "https://generativelanguage.googleapis.com/v1beta/models?key=" . $api_key;
+        $list_response = wp_remote_get($list_url);
+        $available_models = array();
+
+        if (!is_wp_error($list_response)) {
+            $list_data = json_decode(wp_remote_retrieve_body($list_response), true);
+            if (isset($list_data['models'])) {
+                foreach ($list_data['models'] as $m) {
+                    if (in_array('generateContent', $m['supportedGenerationMethods'])) {
+                        $available_models[] = $m['name']; // Nombre completo: models/gemini-1.5-flash
+                    }
+                }
+            }
+        }
+
+        // Si falla el descubrimiento, usamos fallback manual (sin el prefijo models/ para compatibilidad con la URL)
+        if (empty($available_models)) {
+            $available_models = array('models/gemini-1.5-flash', 'models/gemini-pro', 'models/gemini-1.0-pro');
+        }
+
         $reply = '';
         $last_error = '';
 
-        foreach ($models as $model_name) {
-            $url = "https://generativelanguage.googleapis.com/v1beta/models/" . $model_name . ":generateContent?key=" . $api_key;
+        foreach ($available_models as $full_model_name) {
+            // El nombre ya viene como "models/XXXX" desde ListModels o nuestro fallback
+            $url = "https://generativelanguage.googleapis.com/v1beta/" . $full_model_name . ":generateContent?key=" . $api_key;
 
-            // Usamos el formato más compatible (prompt dentro de contents) para evitar errores de versión
             $body = array(
                 'contents' => array(
                     array(
@@ -128,23 +148,18 @@ class DSS_Chatbox_Admin
 
             if (isset($data['candidates'][0]['content']['parts'][0]['text'])) {
                 $reply = $data['candidates'][0]['content']['parts'][0]['text'];
-                break; // ¡Función encontrada!
+                break;
             } elseif (isset($data['error']['message'])) {
                 $last_error = $data['error']['message'];
-                // Si el error es de modelo no encontrado, seguimos probando
-                if (strpos(strtolower($last_error), 'not found') !== false || strpos(strtolower($last_error), 'not supported') !== false) {
-                    continue;
-                } else {
-                    // Si es otro error (autenticación, cuota), detenemos la ejecución
-                    wp_send_json_error(array('message' => 'Error de Gemini (' . $model_name . '): ' . $last_error));
-                }
+                continue;
             }
         }
 
         if (!empty($reply)) {
             wp_send_json_success(array('reply' => $reply));
         } else {
-            wp_send_json_error(array('message' => 'No se pudo obtener respuesta de la IA tras varios intentos. Último error: ' . $last_error));
+            $model_list = !empty($available_models) ? implode(', ', $available_models) : 'ninguno';
+            wp_send_json_error(array('message' => "La IA no pudo responder. Modelos detectados: $model_list. Último error: $last_error"));
         }
     }
 }
