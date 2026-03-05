@@ -24,6 +24,11 @@ class DSS_Theme_Branding
         if (get_option('ctb_hide_updates') === '1') {
             add_action('admin_init', array($this, 'suppress_updates'));
         }
+
+        // Admin Notices Suppression
+        if (get_option('ctb_hide_notices') === '1') {
+            add_action('admin_head', array($this, 'suppress_admin_notices'), 1);
+        }
     }
 
     public function enqueue_branding_assets($hook)
@@ -59,10 +64,14 @@ class DSS_Theme_Branding
         register_setting('ctb_settings_group', 'ctb_admin_bar_logo');
         register_setting('ctb_settings_group', 'ctb_footer_text');
         register_setting('ctb_settings_group', 'ctb_hide_updates');
+        register_setting('ctb_settings_group', 'ctb_hide_notices');
     }
 
     public function settings_page_html()
     {
+        if (isset($_GET['settings-updated'])) {
+            DSS_Notifications::get_instance()->add_persistent('La identidad visual del tema se ha actualizado correctamente.', 'success', 'Marca Guardada');
+        }
         require_once DSS_WHITE_LABEL_PLUGIN_DIR . 'admin/views/view-settings-page.php';
     }
 
@@ -154,5 +163,15 @@ class DSS_Theme_Branding
         add_filter('pre_site_transient_update_core', '__return_null');
         add_filter('pre_site_transient_update_plugins', '__return_null');
         add_filter('pre_site_transient_update_themes', '__return_null');
+    }
+
+    /**
+     * Suppress all admin notices.
+     */
+    public function suppress_admin_notices()
+    {
+        remove_all_actions('admin_notices');
+        remove_all_actions('all_admin_notices');
+        remove_all_actions('user_admin_notices');
     }
 }
