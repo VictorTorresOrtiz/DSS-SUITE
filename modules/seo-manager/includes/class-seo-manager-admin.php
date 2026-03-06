@@ -201,7 +201,15 @@ class DSS_SEO_Manager_Admin
                     </button>
                     <span class="dss-audit-status" id="dss-audit-status"></span>
                 </div>
+                <div class="dss-audit-progress" id="dss-audit-progress" style="display:none;">
+                    <div class="dss-audit-progress-bar">
+                        <div class="dss-audit-progress-fill" id="dss-audit-progress-fill"></div>
+                    </div>
+                    <span class="dss-audit-progress-text" id="dss-audit-progress-text"></span>
+                </div>
+                <nav class="dss-audit-type-tabs" id="dss-audit-type-tabs" style="display:none;"></nav>
                 <div id="dss-audit-results"></div>
+                <div class="dss-audit-pagination" id="dss-audit-pagination" style="display:none;"></div>
             </div>
 
             <?php endif; ?>
@@ -296,7 +304,7 @@ class DSS_SEO_Manager_Admin
     }
 
     /**
-     * AJAX: Scan published pages for heading structure issues.
+     * AJAX: Scan published pages for heading structure issues (batched).
      */
     public function ajax_audit_scan()
     {
@@ -306,10 +314,30 @@ class DSS_SEO_Manager_Admin
             wp_send_json_error('Sin permisos.');
         }
 
+        $offset = intval($_POST['offset'] ?? 0);
+        $batch_size = 5;
+
+        $public_types = get_post_types(array('public' => true), 'objects');
+        unset($public_types['attachment']);
+        $type_slugs = array_keys($public_types);
+
+        // Get total count on first batch
+        $total = 0;
+        if ($offset === 0) {
+            $count_query = new WP_Query(array(
+                'post_type' => $type_slugs,
+                'post_status' => 'publish',
+                'posts_per_page' => -1,
+                'fields' => 'ids',
+            ));
+            $total = $count_query->found_posts;
+        }
+
         $posts = get_posts(array(
-            'post_type' => array('page', 'post'),
+            'post_type' => $type_slugs,
             'post_status' => 'publish',
-            'posts_per_page' => 50,
+            'posts_per_page' => $batch_size,
+            'offset' => $offset,
             'orderby' => 'date',
             'order' => 'DESC',
         ));
@@ -319,7 +347,7 @@ class DSS_SEO_Manager_Admin
         foreach ($posts as $post) {
             $url = get_permalink($post->ID);
             $response = wp_remote_get($url, array(
-                'timeout' => 15,
+                'timeout' => 10,
                 'sslverify' => false,
             ));
 
@@ -327,6 +355,8 @@ class DSS_SEO_Manager_Admin
                 $results[] = array(
                     'title' => $post->post_title,
                     'url' => $url,
+                    'type' => $post->post_type,
+                    'type_label' => isset($public_types[$post->post_type]) ? $public_types[$post->post_type]->labels->singular_name : $post->post_type,
                     'error' => true,
                     'message' => 'No se pudo acceder a la página.',
                 );
@@ -340,13 +370,20 @@ class DSS_SEO_Manager_Admin
                 'title' => $post->post_title,
                 'url' => $url,
                 'type' => $post->post_type,
+                'type_label' => isset($public_types[$post->post_type]) ? $public_types[$post->post_type]->labels->singular_name : $post->post_type,
                 'error' => false,
                 'headings' => $analysis['headings'],
                 'issues' => $analysis['issues'],
             );
         }
 
-        wp_send_json_success($results);
+        wp_send_json_success(array(
+            'results' => $results,
+            'total' => $total,
+            'offset' => $offset,
+            'batch_size' => $batch_size,
+            'has_more' => count($posts) === $batch_size,
+        ));
     }
 
     /**
