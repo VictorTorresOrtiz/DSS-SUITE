@@ -575,7 +575,7 @@ class DSS_Suite_Core
             }
             .dss-module-card:hover {
                 box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
-                transform: translateY(-2px);
+                transform: translateY(-10px);
             }
             .dss-module-card.active {
                 border-color: #2271b1;
