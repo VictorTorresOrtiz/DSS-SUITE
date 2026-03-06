@@ -104,7 +104,7 @@ class DSS_SEO_Manager_Admin
                 </a>
                 <a href="<?php echo esc_url(admin_url('admin.php?page=tag-changer&tab=audit')); ?>"
                    class="dss-seo-tab <?php echo $active_tab === 'audit' ? 'active' : ''; ?>">
-                    <span class="dashicons dashicons-search"></span> Auditoría SEO
+                    <span class="dashicons dashicons-search"></span> Auditoría SEO (Beta)
                 </a>
             </nav>
 
