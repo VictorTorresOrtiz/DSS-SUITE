@@ -94,6 +94,10 @@ DSS-SUITE/
 - Constructor registers hooks
 - Class naming: `DSS_<Module>_Admin`
 
+### Cache Busting (IMPORTANT)
+
+Always increment the module version constant (`DSS_<MODULE>_VERSION`) when modifying CSS or JS files. WordPress caches assets by version string (`?ver=X.X.X`), so without a version bump the browser will serve stale files. This applies to both module-level versions and `DSS_SUITE_VERSION`.
+
 ### Asset Enqueuing
 
 ```php
