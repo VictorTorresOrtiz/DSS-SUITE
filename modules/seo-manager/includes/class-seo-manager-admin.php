@@ -318,7 +318,7 @@ class DSS_SEO_Manager_Admin
         $batch_size = 5;
 
         $public_types = get_post_types(array('public' => true), 'objects');
-        unset($public_types['attachment']);
+        unset($public_types['attachment'], $public_types['product']);
         $type_slugs = array_keys($public_types);
 
         // Get total count on first batch
