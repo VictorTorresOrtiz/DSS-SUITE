@@ -93,7 +93,9 @@
                     '<div class="dss-dup-item" data-id="' + item.id + '">' +
                     thumb +
                     '<div class="dss-dup-info">' +
-                    '<div class="dss-dup-title">' + escHtml(item.title || '(Sin título)') + '</div>' +
+                    '<div class="dss-dup-title">' + escHtml(item.title || '(Sin título)') +
+                    (item.lang ? ' <span class="dss-dup-lang">' + escHtml(item.lang.toUpperCase()) + '</span>' : '') +
+                    '</div>' +
                     '<div class="dss-dup-meta">' +
                     '<span>ID: ' + item.id + '</span>' +
                     (item.sku ? '<span>SKU: ' + escHtml(item.sku) + '</span>' : '') +

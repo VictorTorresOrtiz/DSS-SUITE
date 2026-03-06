@@ -116,14 +116,20 @@ function dss_dupfinder_ajax_scan()
     if (empty($product_ids))
         wp_send_json_success(array('groups' => array(), 'total' => 0));
 
+    $has_polylang = function_exists('pll_get_post_language');
+
     $products_data = array();
     foreach ($product_ids as $pid) {
         $sku = get_post_meta($pid, '_sku', true);
         $title = get_the_title($pid);
+        $lang = $has_polylang ? pll_get_post_language($pid, 'slug') : '';
+        $lang_name = $has_polylang ? pll_get_post_language($pid, 'name') : '';
         $products_data[] = array(
             'id' => $pid,
             'title' => $title,
             'sku' => $sku ?: '',
+            'lang' => $lang ?: '',
+            'lang_name' => $lang_name ?: '',
             'status' => get_post_status($pid),
             'price' => get_post_meta($pid, '_price', true),
             'stock' => get_post_meta($pid, '_stock_status', true),

@@ -214,6 +214,19 @@
     text-overflow: ellipsis;
 }
 
+.dss-dup-lang {
+    display: inline-block;
+    background: #e0f2fe;
+    color: #0369a1;
+    padding: 1px 7px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-left: 6px;
+    vertical-align: middle;
+}
+
 .dss-dup-meta {
     display: flex;
     gap: 15px;
