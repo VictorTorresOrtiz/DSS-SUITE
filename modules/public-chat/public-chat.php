@@ -9,7 +9,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define constants
-define('DSS_PUBLIC_CHAT_VERSION', '1.0.0');
+define('DSS_PUBLIC_CHAT_VERSION', '1.1.0');
 define('DSS_PUBLIC_CHAT_DIR', plugin_dir_path(__FILE__));
 define('DSS_PUBLIC_CHAT_URL', plugin_dir_url(__FILE__));
 

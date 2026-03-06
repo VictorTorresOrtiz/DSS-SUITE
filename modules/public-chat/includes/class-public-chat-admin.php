@@ -232,6 +232,10 @@ class DSS_Public_Chat_Admin
         $active_modules = get_option('dss_suite_active_modules', array());
 
         // Check addons in priority order (first match wins)
+        if (!empty($active_modules['course-advisor']) && $active_modules['course-advisor'] === '1') {
+            return 'course-advisor';
+        }
+
         if (!empty($active_modules['room-designer']) && $active_modules['room-designer'] === '1') {
             return 'room-designer';
         }
@@ -273,6 +277,11 @@ class DSS_Public_Chat_Admin
                 'title' => 'Room Designer',
                 'welcome' => '¡Hola! Sube una foto de tu habitación y te mostraré cómo quedaría con nuestros muebles.',
             ),
+            'course-advisor' => array(
+                'icon' => 'dashicons-welcome-learn-more',
+                'title' => 'Asesor de Formación',
+                'welcome' => '¡Hola! Soy tu asesor de formación de ' . esc_html(get_bloginfo('name')) . '. Cuéntame qué quieres aprender y te recomendaré el curso ideal para ti.',
+            ),
         );
 
         $cfg = $modes[$mode] ?? $modes['default'];
@@ -309,6 +318,20 @@ class DSS_Public_Chat_Admin
                         <?php endif; ?>
                     <?php endif; ?>
 
+                    <?php if ($mode === 'course-advisor'): ?>
+                        <div class="dss-ca-chips">
+                            <button class="dss-ca-chip" data-query="¿Qué cursos tenéis disponibles?">
+                                <span class="dashicons dashicons-list-view"></span> Ver cursos
+                            </button>
+                            <button class="dss-ca-chip" data-query="Soy principiante, ¿qué curso me recomendáis para empezar?">
+                                <span class="dashicons dashicons-star-empty"></span> Soy principiante
+                            </button>
+                            <button class="dss-ca-chip" data-query="¿Cuáles son los cursos más populares?">
+                                <span class="dashicons dashicons-awards"></span> Más populares
+                            </button>
+                        </div>
+                    <?php endif; ?>
+
                     <?php if ($mode === 'room-designer'): ?>
                         <div class="dss-rd-upload-zone" id="dss-rd-dropzone">
                             <span class="dashicons dashicons-format-image"></span>
@@ -340,6 +363,13 @@ class DSS_Public_Chat_Admin
                             <button type="submit" id="dss-public-chat-send">
                                 <img src="<?php echo DSS_PUBLIC_CHAT_URL . 'assets/images/enviar.gif'; ?>" alt="Enviar"
                                     style="width: 100%; height: 100%; object-fit: cover;">
+                            </button>
+                        </form>
+                    <?php elseif ($mode === 'course-advisor'): ?>
+                        <form id="dss-ca-form">
+                            <textarea name="chat_message" placeholder="Pregúntame sobre cursos y formaciones..." rows="1"></textarea>
+                            <button type="submit" class="dss-ca-send-btn" disabled>
+                                <span class="dashicons dashicons-arrow-right-alt"></span>
                             </button>
                         </form>
                     <?php elseif ($mode === 'room-designer'): ?>

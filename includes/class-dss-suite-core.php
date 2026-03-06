@@ -61,6 +61,13 @@ class DSS_Suite_Core
             'requires' => 'public-chat',
             'icon' => 'dashicons-admin-home',
         ),
+        'course-advisor' => array(
+            'name' => 'Course Advisor',
+            'description' => 'Asesor IA para webs de formaciones. Recomienda cursos segun objetivos y nivel del visitante.',
+            'file' => 'public-chat/addons/course-advisor/course-advisor.php',
+            'requires' => 'public-chat',
+            'icon' => 'dashicons-welcome-learn-more',
+        ),
         'duplicate-finder' => array(
             'name' => 'Duplicate Finder',
             'description' => 'Encuentra y gestiona productos duplicados en WooCommerce.',
