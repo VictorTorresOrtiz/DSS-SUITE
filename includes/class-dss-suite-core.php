@@ -52,6 +52,11 @@ class DSS_Suite_Core
             'file' => 'public-chat/addons/room-designer/room-designer.php',
             'requires' => 'public-chat',
         ),
+        'duplicate-finder' => array(
+            'name' => 'Duplicate Finder',
+            'description' => 'Encuentra y gestiona productos duplicados en WooCommerce.',
+            'file' => 'duplicate-finder/function.php',
+        ),
     );
 
     /**
