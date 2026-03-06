@@ -212,10 +212,20 @@ jQuery(document).ready(function ($) {
                         var level = parseInt(h.tag.replace('H', ''));
                         var indent = (level - 1) * 20;
                         var tagClass = 'dss-tag-h' + level;
+                        var tags = ['h1','h2','h3','h4','h5','h6'];
+                        var currentTag = h.tag.toLowerCase();
+
+                        var selectHtml = '<select class="dss-heading-changer" data-selector="' + escAttr(h.selector) + '" data-original="' + escAttr(currentTag) + '">';
+                        tags.forEach(function (t) {
+                            selectHtml += '<option value="' + t + '"' + (t === currentTag ? ' selected' : '') + '>' + t.toUpperCase() + '</option>';
+                        });
+                        selectHtml += '</select>';
+
                         list.append(
                             '<li style="padding-left:' + indent + 'px">' +
                             '<span class="dss-heading-tag ' + tagClass + '">' + h.tag + '</span> ' +
-                            escHtml(h.text || '(vacio)') +
+                            selectHtml + ' ' +
+                            '<span class="dss-heading-text">' + escHtml(h.text || '(vacio)') + '</span>' +
                             '</li>'
                         );
                     });
@@ -285,6 +295,43 @@ jQuery(document).ready(function ($) {
         currentPage = page;
         renderCurrentView();
         $('html, body').animate({ scrollTop: $typeTabs.offset().top - 40 }, 200);
+    });
+
+    // ── Change tag from audit ──
+    $results.on('change', '.dss-heading-changer', function () {
+        var $select = $(this);
+        var selector = $select.data('selector');
+        var original = $select.data('original');
+        var newTag = $select.val();
+
+        if (newTag === original) {
+            $select.removeClass('dss-changer-saved dss-changer-error');
+            return;
+        }
+
+        $select.prop('disabled', true);
+
+        $.post(dssSeoAudit.ajaxUrl, {
+            action: 'dss_seo_audit_change_tag',
+            nonce: dssSeoAudit.nonce,
+            selector: selector,
+            new_tag: newTag
+        }, function (res) {
+            $select.prop('disabled', false);
+            if (res.success) {
+                $select.addClass('dss-changer-saved');
+                setTimeout(function () { $select.removeClass('dss-changer-saved'); }, 2000);
+            } else {
+                alert('Error: ' + (res.data || 'No se pudo guardar'));
+                $select.val(original);
+                $select.addClass('dss-changer-error');
+                setTimeout(function () { $select.removeClass('dss-changer-error'); }, 2000);
+            }
+        }).fail(function () {
+            $select.prop('disabled', false);
+            alert('Error de conexión.');
+            $select.val(original);
+        });
     });
 
     // ── Helpers ──
