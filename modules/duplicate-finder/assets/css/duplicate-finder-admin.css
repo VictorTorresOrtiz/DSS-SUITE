@@ -105,9 +105,45 @@
     color: #1e293b;
 }
 
-.dss-dupfinder-hint {
-    font-size: 13px;
-    color: #64748b;
+.dss-dupfinder-toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.dss-btn-bulk-trash {
+    display: flex !important;
+    align-items: center;
+    gap: 6px;
+    background: #dc2626 !important;
+    border-color: #dc2626 !important;
+    color: #fff !important;
+    font-weight: 600;
+}
+
+.dss-btn-bulk-trash:hover {
+    background: #b91c1c !important;
+    border-color: #b91c1c !important;
+}
+
+.dss-btn-rollback {
+    display: flex !important;
+    align-items: center;
+    gap: 6px;
+    background: #f0fdf4 !important;
+    border-color: #86efac !important;
+    color: #166534 !important;
+    font-weight: 600;
+}
+
+.dss-btn-rollback:hover {
+    background: #dcfce7 !important;
+    border-color: #22c55e !important;
+}
+
+.dss-dup-lang-warn {
+    font-weight: 600;
+    color: #dc2626;
 }
 
 /* ── Loading ── */

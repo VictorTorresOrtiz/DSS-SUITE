@@ -75,9 +75,17 @@ function dss_dupfinder_render_page()
         <div class="dss-dupfinder-card" id="dss-dupfinder-results" style="display:none;">
             <div class="dss-dupfinder-toolbar">
                 <span class="dss-dupfinder-count" id="dss-dupfinder-count"></span>
-                <span class="dss-dupfinder-hint" id="dss-dupfinder-hint"></span>
+                <div class="dss-dupfinder-toolbar-actions">
+                    <button type="button" class="button dss-btn-rollback" id="dss-dupfinder-rollback" style="display:none;">
+                        <span class="dashicons dashicons-undo" style="font-size:16px;width:16px;height:16px;vertical-align:middle;margin-top:-2px;"></span> Rollback
+                    </button>
+                    <button type="button" class="button button-primary dss-btn-bulk-trash" id="dss-dupfinder-bulk-trash" style="display:none;">
+                        <span class="dashicons dashicons-trash" style="font-size:16px;width:16px;height:16px;vertical-align:middle;margin-top:-2px;"></span> Borrar duplicados por idioma
+                    </button>
+                </div>
             </div>
             <div id="dss-dupfinder-list"></div>
+            <div class="dss-dupfinder-pagination" id="dss-dupfinder-pagination" style="display:none;"></div>
         </div>
 
         <div class="dss-dupfinder-loading" id="dss-dupfinder-loading" style="display:none;">
@@ -216,4 +224,97 @@ function dss_dupfinder_ajax_trash()
         wp_send_json_error('No se pudo mover a la papelera.');
 
     wp_send_json_success(array('id' => $post_id));
+}
+
+// ──────────────────────────────────────
+// AJAX: Bulk trash duplicates by language
+// Keeps the oldest product per language in each group, trashes the rest.
+// ──────────────────────────────────────
+add_action('wp_ajax_dss_dupfinder_bulk_trash', 'dss_dupfinder_ajax_bulk_trash');
+function dss_dupfinder_ajax_bulk_trash()
+{
+    check_ajax_referer('dss_dupfinder_nonce', 'nonce');
+    if (!current_user_can('manage_options'))
+        wp_send_json_error('Sin permisos.');
+
+    $groups = isset($_POST['groups']) ? $_POST['groups'] : array();
+    if (empty($groups) || !is_array($groups))
+        wp_send_json_error('No hay grupos para procesar.');
+
+    $trashed_ids = array();
+
+    foreach ($groups as $group) {
+        if (empty($group['items']) || !is_array($group['items']))
+            continue;
+
+        // Group items by language
+        $by_lang = array();
+        foreach ($group['items'] as $item) {
+            $lang = isset($item['lang']) ? sanitize_text_field($item['lang']) : '';
+            $lang_key = $lang ?: '__no_lang__';
+            $by_lang[$lang_key][] = intval($item['id']);
+        }
+
+        // For each language subgroup, keep the first (oldest ID = lowest) and trash the rest
+        foreach ($by_lang as $lang_key => $ids) {
+            if (count($ids) <= 1)
+                continue;
+
+            sort($ids); // lowest ID first = oldest
+            $keep = array_shift($ids);
+
+            foreach ($ids as $trash_id) {
+                if (get_post_type($trash_id) === 'product' && get_post_status($trash_id) !== 'trash') {
+                    $result = wp_trash_post($trash_id);
+                    if ($result) {
+                        $trashed_ids[] = $trash_id;
+                    }
+                }
+            }
+        }
+    }
+
+    // Store trashed IDs for rollback (per user, 24h expiry)
+    if (!empty($trashed_ids)) {
+        $transient_key = 'dss_dupfinder_rollback_' . get_current_user_id();
+        set_transient($transient_key, $trashed_ids, 24 * HOUR_IN_SECONDS);
+    }
+
+    wp_send_json_success(array(
+        'trashed' => $trashed_ids,
+        'count' => count($trashed_ids),
+    ));
+}
+
+// ──────────────────────────────────────
+// AJAX: Rollback last bulk trash
+// ──────────────────────────────────────
+add_action('wp_ajax_dss_dupfinder_rollback', 'dss_dupfinder_ajax_rollback');
+function dss_dupfinder_ajax_rollback()
+{
+    check_ajax_referer('dss_dupfinder_nonce', 'nonce');
+    if (!current_user_can('manage_options'))
+        wp_send_json_error('Sin permisos.');
+
+    $transient_key = 'dss_dupfinder_rollback_' . get_current_user_id();
+    $trashed_ids = get_transient($transient_key);
+
+    if (empty($trashed_ids) || !is_array($trashed_ids))
+        wp_send_json_error('No hay operación reciente para deshacer.');
+
+    $restored = array();
+    foreach ($trashed_ids as $post_id) {
+        $post_id = intval($post_id);
+        if ($post_id > 0 && get_post_status($post_id) === 'trash') {
+            wp_untrash_post($post_id);
+            $restored[] = $post_id;
+        }
+    }
+
+    delete_transient($transient_key);
+
+    wp_send_json_success(array(
+        'restored' => $restored,
+        'count' => count($restored),
+    ));
 }
