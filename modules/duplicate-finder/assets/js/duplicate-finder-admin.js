@@ -8,8 +8,11 @@
     var $loading = $('#dss-dupfinder-loading');
     var $bulkTrash = $('#dss-dupfinder-bulk-trash');
     var $rollback = $('#dss-dupfinder-rollback');
+    var $pagination = $('#dss-dupfinder-pagination');
 
     var lastGroups = [];
+    var currentPage = 1;
+    var perPage = 5;
 
     // ── Scan ──
     $scanBtn.on('click', function () {
@@ -20,6 +23,7 @@
         $results.hide();
         $bulkTrash.hide();
         $rollback.hide();
+        $pagination.hide();
         $loading.show();
         $list.empty();
 
@@ -54,16 +58,28 @@
             }
 
             lastGroups = data.groups;
+            currentPage = 1;
             $count.text(data.group_count + ' grupo' + (data.group_count > 1 ? 's' : '') + ' (' + data.total + ' productos)');
             $bulkTrash.show();
 
-            renderGroups(data.groups);
+            renderPage();
         }).fail(function () {
             $loading.hide();
             $scanBtn.prop('disabled', false);
             alert('Error de conexión.');
         });
     });
+
+    // ── Render current page ──
+    function renderPage() {
+        var totalPages = Math.ceil(lastGroups.length / perPage);
+        var start = (currentPage - 1) * perPage;
+        var end = Math.min(start + perPage, lastGroups.length);
+        var pageGroups = lastGroups.slice(start, end);
+
+        renderGroups(pageGroups);
+        renderPagination(totalPages);
+    }
 
     // ── Render Groups ──
     function renderGroups(groups) {
@@ -72,7 +88,6 @@
         groups.forEach(function (group) {
             var $group = $('<div class="dss-dup-group"></div>');
 
-            // Detect languages with duplicates in this group
             var langCounts = {};
             group.items.forEach(function (item) {
                 var l = item.lang || '__no_lang__';
@@ -141,6 +156,64 @@
         });
     }
 
+    // ── Render Pagination ──
+    function renderPagination(totalPages) {
+        $pagination.empty();
+
+        if (totalPages <= 1) {
+            $pagination.hide();
+            return;
+        }
+
+        $pagination.show();
+
+        var html = '<div class="dss-pag-info">Página ' + currentPage + ' de ' + totalPages + '</div>';
+        html += '<div class="dss-pag-buttons">';
+
+        // Previous
+        html += '<button type="button" class="button dss-pag-btn" data-page="' + (currentPage - 1) + '"' +
+            (currentPage === 1 ? ' disabled' : '') + '>&laquo; Anterior</button>';
+
+        // Page numbers
+        var startPage = Math.max(1, currentPage - 2);
+        var endPage = Math.min(totalPages, currentPage + 2);
+
+        if (startPage > 1) {
+            html += '<button type="button" class="button dss-pag-btn" data-page="1">1</button>';
+            if (startPage > 2) html += '<span class="dss-pag-dots">...</span>';
+        }
+
+        for (var i = startPage; i <= endPage; i++) {
+            html += '<button type="button" class="button dss-pag-btn' + (i === currentPage ? ' dss-pag-active' : '') + '" data-page="' + i + '">' + i + '</button>';
+        }
+
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) html += '<span class="dss-pag-dots">...</span>';
+            html += '<button type="button" class="button dss-pag-btn" data-page="' + totalPages + '">' + totalPages + '</button>';
+        }
+
+        // Next
+        html += '<button type="button" class="button dss-pag-btn" data-page="' + (currentPage + 1) + '"' +
+            (currentPage === totalPages ? ' disabled' : '') + '>Siguiente &raquo;</button>';
+
+        html += '</div>';
+
+        $pagination.html(html);
+    }
+
+    // ── Pagination click ──
+    $pagination.on('click', '.dss-pag-btn', function () {
+        var page = parseInt($(this).data('page'), 10);
+        var totalPages = Math.ceil(lastGroups.length / perPage);
+        if (page < 1 || page > totalPages || page === currentPage) return;
+
+        currentPage = page;
+        renderPage();
+
+        // Scroll to top of results
+        $('html, body').animate({ scrollTop: $results.offset().top - 40 }, 200);
+    });
+
     // ── Trash single product ──
     $list.on('click', '.dss-btn-trash', function () {
         var $btn = $(this);
@@ -176,7 +249,6 @@
     $bulkTrash.on('click', function () {
         if (lastGroups.length === 0) return;
 
-        // Count how many will be trashed
         var toTrash = 0;
         lastGroups.forEach(function (group) {
             var byLang = {};
@@ -203,9 +275,8 @@
 
         $bulkTrash.prop('disabled', true).text('Procesando...');
 
-        // Serialize groups for AJAX
         var groupsData = [];
-        lastGroups.forEach(function (group, gi) {
+        lastGroups.forEach(function (group) {
             var items = [];
             group.items.forEach(function (item) {
                 items.push({ id: item.id, lang: item.lang || '' });
@@ -229,7 +300,20 @@
 
             var data = res.data;
 
-            // Mark trashed items in UI
+            // Mark trashed items across all pages in lastGroups
+            var trashedSet = {};
+            data.trashed.forEach(function (id) { trashedSet[id] = true; });
+
+            lastGroups.forEach(function (group) {
+                group.items.forEach(function (item) {
+                    if (trashedSet[item.id]) item._trashed = true;
+                });
+            });
+
+            // Re-render current page to reflect changes
+            renderPage();
+
+            // Also mark visible trashed items
             data.trashed.forEach(function (id) {
                 var $item = $list.find('.dss-dup-item[data-id="' + id + '"]');
                 $item.addClass('trashed');
@@ -241,7 +325,6 @@
                 data.count + ' producto(s) movidos a la papelera'
             );
 
-            // Show rollback button
             if (data.count > 0) {
                 $rollback.show();
                 $bulkTrash.hide();
@@ -277,7 +360,18 @@
 
             var data = res.data;
 
-            // Remove trashed state from restored items
+            // Clear trashed flag in data
+            var restoredSet = {};
+            data.restored.forEach(function (id) { restoredSet[id] = true; });
+
+            lastGroups.forEach(function (group) {
+                group.items.forEach(function (item) {
+                    if (restoredSet[item.id]) delete item._trashed;
+                });
+            });
+
+            renderPage();
+
             data.restored.forEach(function (id) {
                 var $item = $list.find('.dss-dup-item[data-id="' + id + '"]');
                 $item.removeClass('trashed');

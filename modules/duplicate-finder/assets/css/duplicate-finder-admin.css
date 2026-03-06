@@ -360,6 +360,58 @@
     font-size: 18px;
 }
 
+/* ── Pagination ── */
+
+.dss-dupfinder-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 25px;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+}
+
+.dss-pag-info {
+    font-size: 13px;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.dss-pag-buttons {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.dss-pag-btn {
+    min-width: 36px;
+    height: 36px !important;
+    padding: 0 10px !important;
+    font-size: 13px !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px !important;
+}
+
+.dss-pag-btn.dss-pag-active {
+    background: #2271b1 !important;
+    border-color: #2271b1 !important;
+    color: #fff !important;
+    font-weight: 700;
+}
+
+.dss-pag-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.dss-pag-dots {
+    padding: 0 6px;
+    color: #94a3b8;
+    font-size: 14px;
+}
+
 /* ── Responsive ── */
 
 @media (max-width: 782px) {
