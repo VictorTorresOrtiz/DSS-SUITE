@@ -20,42 +20,59 @@ class DSS_Suite_Core
             'name' => 'DSS Dashboard',
             'description' => 'Rediseño total del dashboard de WordPress.',
             'file' => 'dashboard/admin-musik.php',
+            'icon' => 'dashicons-layout',
         ),
         'seo-manager' => array(
             'name' => 'SEO Manager',
             'description' => 'Cambia etiquetas HTML y añade clases personalizadas.',
             'file' => 'seo-manager/seo-manager.php',
+            'icon' => 'dashicons-search',
         ),
         'white-label' => array(
             'name' => 'Widget & Theme controller',
             'description' => 'Añade nuevos widgets, renombra items y personaliza la apariencia del tema.',
             'file' => 'white-label/white-label.php',
+            'icon' => 'dashicons-art',
         ),
         'cpt-sorter' => array(
             'name' => 'Content Sorter',
             'description' => 'Ordenamiento manual (Drag & Drop) para cualquier CPT y taxonomía.',
             'file' => 'cpt-sorter/function.php',
+            'icon' => 'dashicons-sort',
         ),
         'chatbox' => array(
-            'name' => 'Chatbox de Soporte (Premium)',
+            'name' => 'Chatbox de Soporte',
             'description' => 'Añade un chatbox moderno en el área de administración para consultas de clientes.',
             'file' => 'chatbox/chatbox.php',
+            'icon' => 'dashicons-format-chat',
+            'premium' => true,
         ),
         'public-chat' => array(
-            'name' => 'Chat Público Beta (Premium)',
+            'name' => 'Chat Público Beta',
             'description' => 'Chatbot flotante para la parte pública con soporte de fotos y prompts personalizados.',
             'file' => 'public-chat/public-chat.php',
+            'icon' => 'dashicons-admin-comments',
+            'premium' => true,
         ),
         'room-designer' => array(
-            'name' => 'Addon: Room Designer',
+            'name' => 'Room Designer',
             'description' => 'El cliente sube una foto de su habitación y la IA coloca los muebles de tu tienda.',
             'file' => 'public-chat/addons/room-designer/room-designer.php',
             'requires' => 'public-chat',
+            'icon' => 'dashicons-admin-home',
+        ),
+        'course-advisor' => array(
+            'name' => 'Course Advisor',
+            'description' => 'Asesor IA para webs de formaciones. Recomienda cursos segun objetivos y nivel del visitante.',
+            'file' => 'public-chat/addons/course-advisor/course-advisor.php',
+            'requires' => 'public-chat',
+            'icon' => 'dashicons-welcome-learn-more',
         ),
         'duplicate-finder' => array(
             'name' => 'Duplicate Finder',
             'description' => 'Encuentra y gestiona productos duplicados en WooCommerce.',
             'file' => 'duplicate-finder/function.php',
+            'icon' => 'dashicons-controls-repeat',
         ),
     );
 
@@ -253,102 +270,137 @@ class DSS_Suite_Core
         $active_modules = get_option('dss_suite_active_modules', array());
 
         if (isset($_GET['settings-updated'])) {
-            // Eliminamos add_settings_error para que no aparezca el aviso nativo
             DSS_Notifications::get_instance()->add_persistent('Los módulos de la suite se han actualizado correctamente.', 'success', 'Ajustes Guardados');
         }
 
         if (isset($_GET['unlocked'])) {
-            DSS_Notifications::get_instance()->add('¡Bienvenido! El panel de DSS Suite se ha desbloqueado correctamente.', 'success', 'Acceso Concedido');
+            DSS_Notifications::get_instance()->add('El panel de DSS Suite se ha desbloqueado correctamente.', 'success', 'Acceso Concedido');
         }
 
-        // Ya no llamamos a settings_errors('dss_suite_messages') para evitar el aviso por defecto
+        $core_modules = array();
+        $addon_modules = array();
+        $active_count = 0;
+        foreach ($this->modules as $slug => $module) {
+            $is_active = isset($active_modules[$slug]) && $active_modules[$slug] === '1';
+            if ($is_active) $active_count++;
+            if (!empty($module['requires'])) {
+                $addon_modules[$slug] = $module;
+            } else {
+                $core_modules[$slug] = $module;
+            }
+        }
+
         ?>
-        <div class="wrap">
-            <h1>DSS Suite - Panel de Control</h1>
-            <p>Activa o desactiva los módulos que deseas utilizar en este sitio.</p>
+        <div class="wrap dss-panel">
+            <div class="dss-panel-header">
+                <div class="dss-panel-header-left">
+                    <h1><span class="dashicons dashicons-admin-generic" style="font-size:28px;width:28px;height:28px;color:#2271b1;"></span> DSS Suite</h1>
+                    <span class="dss-badge">v<?php echo esc_html(DSS_SUITE_VERSION); ?></span>
+                </div>
+                <div class="dss-panel-stats">
+                    <div class="dss-stat">
+                        <span class="dss-stat-number"><?php echo $active_count; ?></span>
+                        <span class="dss-stat-label">Activos</span>
+                    </div>
+                    <div class="dss-stat">
+                        <span class="dss-stat-number"><?php echo count($this->modules); ?></span>
+                        <span class="dss-stat-label">Total</span>
+                    </div>
+                </div>
+            </div>
 
             <form action="options.php" method="post">
                 <?php settings_fields('dss_suite_options_group'); ?>
 
-                <?php
-                $core_modules = array();
-                $addon_modules = array();
-                foreach ($this->modules as $slug => $module) {
-                    if (!empty($module['requires'])) {
-                        $addon_modules[$slug] = $module;
-                    } else {
-                        $core_modules[$slug] = $module;
-                    }
-                }
-                ?>
-
-                <h2 style="margin-top:10px;">Módulos</h2>
-                <table class="wp-list-table widefat fixed striped">
-                    <thead>
-                        <tr>
-                            <th style="width: 50px;">Estado</th>
-                            <th>Módulo</th>
-                            <th>Descripción</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($core_modules as $slug => $module): ?>
-                            <?php $is_checked = isset($active_modules[$slug]) && $active_modules[$slug] === '1'; ?>
-                            <tr>
-                                <td>
-                                    <label class="dss-switch">
-                                        <input type="checkbox" name="dss_suite_active_modules[<?php echo esc_attr($slug); ?>]"
-                                            value="1" <?php checked($is_checked, true); ?>>
-                                        <span class="dss-slider"></span>
-                                    </label>
-                                </td>
-                                <td><strong><?php echo esc_html($module['name']); ?></strong></td>
-                                <td><?php echo esc_html($module['description']); ?></td>
-                            </tr>
+                <div class="dss-section">
+                    <div class="dss-section-header">
+                        <h2><span class="dashicons dashicons-screenoptions"></span> Módulos</h2>
+                        <p><?php echo count($core_modules); ?> módulos disponibles</p>
+                    </div>
+                    <div class="dss-cards-grid">
+                        <?php foreach ($core_modules as $slug => $module):
+                            $is_checked = isset($active_modules[$slug]) && $active_modules[$slug] === '1';
+                            $icon = $module['icon'] ?? 'dashicons-admin-plugins';
+                            $is_premium = !empty($module['premium']);
+                        ?>
+                        <div class="dss-module-card <?php echo $is_checked ? 'active' : ''; ?>">
+                            <div class="dss-module-card-header">
+                                <span class="dashicons <?php echo esc_attr($icon); ?> dss-module-icon"></span>
+                                <label class="dss-switch">
+                                    <input type="checkbox" name="dss_suite_active_modules[<?php echo esc_attr($slug); ?>]"
+                                        value="1" <?php checked($is_checked, true); ?>>
+                                    <span class="dss-slider"></span>
+                                </label>
+                            </div>
+                            <div class="dss-module-card-body">
+                                <h3>
+                                    <?php echo esc_html($module['name']); ?>
+                                    <?php if ($is_premium): ?>
+                                        <span class="dss-premium-badge">Premium</span>
+                                    <?php endif; ?>
+                                </h3>
+                                <p><?php echo esc_html($module['description']); ?></p>
+                            </div>
+                            <div class="dss-module-card-footer">
+                                <span class="dss-module-status <?php echo $is_checked ? 'on' : 'off'; ?>">
+                                    <span class="dss-status-dot"></span>
+                                    <?php echo $is_checked ? 'Activo' : 'Inactivo'; ?>
+                                </span>
+                            </div>
+                        </div>
                         <?php endforeach; ?>
-                    </tbody>
-                </table>
+                    </div>
+                </div>
 
                 <?php if (!empty($addon_modules)): ?>
-                <h2 style="margin-top:30px;">Addons</h2>
-                <table class="wp-list-table widefat fixed striped">
-                    <thead>
-                        <tr>
-                            <th style="width: 50px;">Estado</th>
-                            <th>Addon</th>
-                            <th>Descripción</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($addon_modules as $slug => $module): ?>
-                            <?php
+                <div class="dss-section">
+                    <div class="dss-section-header">
+                        <h2><span class="dashicons dashicons-admin-plugins"></span> Addons</h2>
+                        <p>Extensiones que amplían los módulos principales</p>
+                    </div>
+                    <div class="dss-cards-grid">
+                        <?php foreach ($addon_modules as $slug => $module):
                             $is_checked = isset($active_modules[$slug]) && $active_modules[$slug] === '1';
                             $req = $module['requires'];
                             $dep_active = isset($active_modules[$req]) && $active_modules[$req] === '1';
                             $dep_missing = !$dep_active;
-                            ?>
-                            <tr class="dss-addon-row">
-                                <td>
-                                    <label class="dss-switch">
-                                        <input type="checkbox" name="dss_suite_active_modules[<?php echo esc_attr($slug); ?>]"
-                                            value="1" <?php checked($is_checked, true); ?> <?php echo $dep_missing ? 'disabled' : ''; ?>>
-                                        <span class="dss-slider"></span>
-                                    </label>
-                                </td>
-                                <td>
-                                    <strong><?php echo esc_html($module['name']); ?></strong>
-                                    <?php if ($dep_missing): ?>
-                                        <br><small style="color:#ef4444;">Requiere: <?php echo esc_html($this->modules[$req]['name']); ?></small>
-                                    <?php endif; ?>
-                                </td>
-                                <td><?php echo esc_html($module['description']); ?></td>
-                            </tr>
+                            $icon = $module['icon'] ?? 'dashicons-admin-plugins';
+                        ?>
+                        <div class="dss-module-card dss-addon-card <?php echo $is_checked ? 'active' : ''; ?> <?php echo $dep_missing ? 'disabled' : ''; ?>">
+                            <div class="dss-module-card-header">
+                                <span class="dashicons <?php echo esc_attr($icon); ?> dss-module-icon"></span>
+                                <label class="dss-switch">
+                                    <input type="checkbox" name="dss_suite_active_modules[<?php echo esc_attr($slug); ?>]"
+                                        value="1" <?php checked($is_checked, true); ?> <?php echo $dep_missing ? 'disabled' : ''; ?>>
+                                    <span class="dss-slider"></span>
+                                </label>
+                            </div>
+                            <div class="dss-module-card-body">
+                                <h3><?php echo esc_html($module['name']); ?></h3>
+                                <p><?php echo esc_html($module['description']); ?></p>
+                            </div>
+                            <div class="dss-module-card-footer">
+                                <?php if ($dep_missing): ?>
+                                    <span class="dss-module-dep-warning">
+                                        <span class="dashicons dashicons-warning"></span>
+                                        Requiere <?php echo esc_html($this->modules[$req]['name']); ?>
+                                    </span>
+                                <?php else: ?>
+                                    <span class="dss-module-status <?php echo $is_checked ? 'on' : 'off'; ?>">
+                                        <span class="dss-status-dot"></span>
+                                        <?php echo $is_checked ? 'Activo' : 'Inactivo'; ?>
+                                    </span>
+                                <?php endif; ?>
+                            </div>
+                        </div>
                         <?php endforeach; ?>
-                    </tbody>
-                </table>
+                    </div>
+                </div>
                 <?php endif; ?>
 
-                <?php submit_button('Guardar Cambios'); ?>
+                <div class="dss-panel-submit">
+                    <?php submit_button('Guardar Cambios', 'primary large', 'submit', false); ?>
+                </div>
             </form>
         </div>
         <?php
@@ -416,31 +468,241 @@ class DSS_Suite_Core
     {
         ?>
         <style>
+            /* ── Panel Layout ── */
+            .dss-panel { max-width: 1100px; margin: 20px 0; }
+
+            .dss-panel-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 30px;
+                flex-wrap: wrap;
+                gap: 15px;
+            }
+            .dss-panel-header-left {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+            .dss-panel-header-left h1 {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                margin: 0;
+                font-size: 26px;
+                color: #1e293b;
+            }
+            .dss-badge {
+                background: #e0f2fe;
+                color: #0369a1;
+                padding: 4px 12px;
+                border-radius: 20px;
+                font-size: 12px;
+                font-weight: 600;
+                letter-spacing: 0.5px;
+            }
+            .dss-panel-stats {
+                display: flex;
+                gap: 20px;
+            }
+            .dss-stat {
+                text-align: center;
+                background: #fff;
+                border: 1px solid #e2e8f0;
+                border-radius: 10px;
+                padding: 10px 20px;
+            }
+            .dss-stat-number {
+                display: block;
+                font-size: 22px;
+                font-weight: 700;
+                color: #2271b1;
+            }
+            .dss-stat-label {
+                font-size: 11px;
+                color: #94a3b8;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                font-weight: 600;
+            }
+
+            /* ── Sections ── */
+            .dss-section { margin-bottom: 35px; }
+            .dss-section-header {
+                display: flex;
+                align-items: baseline;
+                gap: 12px;
+                margin-bottom: 18px;
+                border-bottom: 2px solid #e2e8f0;
+                padding-bottom: 12px;
+            }
+            .dss-section-header h2 {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin: 0;
+                font-size: 18px;
+                color: #1e293b;
+            }
+            .dss-section-header h2 .dashicons {
+                color: #2271b1;
+                font-size: 20px;
+                width: 20px;
+                height: 20px;
+            }
+            .dss-section-header p {
+                margin: 0;
+                color: #94a3b8;
+                font-size: 13px;
+            }
+
+            /* ── Cards Grid ── */
+            .dss-cards-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                gap: 18px;
+            }
+
+            /* ── Module Card ── */
+            .dss-module-card {
+                background: #fff;
+                border: 1px solid #e2e8f0;
+                border-radius: 12px;
+                overflow: hidden;
+                transition: all 0.25s ease;
+                display: flex;
+                flex-direction: column;
+            }
+            .dss-module-card:hover {
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+                transform: translateY(-2px);
+            }
+            .dss-module-card.active {
+                border-color: #2271b1;
+                box-shadow: 0 0 0 1px #2271b1;
+            }
+            .dss-module-card.disabled {
+                opacity: 0.55;
+            }
+            .dss-module-card.disabled:hover {
+                transform: none;
+                box-shadow: none;
+            }
+
+            .dss-module-card-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 18px 20px 0;
+            }
+            .dss-module-icon {
+                font-size: 28px;
+                width: 28px;
+                height: 28px;
+                color: #94a3b8;
+                transition: color 0.2s;
+            }
+            .dss-module-card.active .dss-module-icon {
+                color: #2271b1;
+            }
+
+            .dss-module-card-body {
+                padding: 12px 20px 0;
+                flex: 1;
+            }
+            .dss-module-card-body h3 {
+                margin: 0 0 6px;
+                font-size: 15px;
+                color: #1e293b;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .dss-module-card-body p {
+                margin: 0;
+                font-size: 13px;
+                color: #64748b;
+                line-height: 1.5;
+            }
+
+            .dss-premium-badge {
+                background: linear-gradient(135deg, #f59e0b, #d97706);
+                color: #fff;
+                padding: 2px 8px;
+                border-radius: 4px;
+                font-size: 10px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+
+            .dss-module-card-footer {
+                padding: 14px 20px;
+                margin-top: 12px;
+                border-top: 1px solid #f1f5f9;
+            }
+
+            /* ── Status ── */
+            .dss-module-status {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                font-size: 12px;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.3px;
+            }
+            .dss-module-status.on { color: #16a34a; }
+            .dss-module-status.off { color: #94a3b8; }
+            .dss-status-dot {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                display: inline-block;
+            }
+            .dss-module-status.on .dss-status-dot { background: #22c55e; box-shadow: 0 0 6px rgba(34,197,94,0.4); }
+            .dss-module-status.off .dss-status-dot { background: #cbd5e1; }
+
+            .dss-module-dep-warning {
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                font-size: 12px;
+                color: #dc2626;
+                font-weight: 500;
+            }
+            .dss-module-dep-warning .dashicons {
+                font-size: 14px;
+                width: 14px;
+                height: 14px;
+                color: #dc2626;
+            }
+
+            /* ── Addon Card ── */
+            .dss-addon-card { border-left: 3px solid #2271b1; }
+            .dss-addon-card.disabled { border-left-color: #cbd5e1; }
+
+            /* ── Switch ── */
             .dss-switch {
                 position: relative;
                 display: inline-block;
                 width: 44px;
                 height: 24px;
+                flex-shrink: 0;
             }
-
             .dss-switch input {
                 opacity: 0;
                 width: 0;
                 height: 0;
             }
-
             .dss-slider {
                 position: absolute;
                 cursor: pointer;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
+                top: 0; left: 0; right: 0; bottom: 0;
                 background-color: #cbd5e1;
-                transition: .4s;
+                transition: .3s;
                 border-radius: 24px;
             }
-
             .dss-slider:before {
                 position: absolute;
                 content: "";
@@ -449,27 +711,33 @@ class DSS_Suite_Core
                 left: 3px;
                 bottom: 3px;
                 background-color: white;
-                transition: .4s;
+                transition: .3s;
                 border-radius: 50%;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+            }
+            input:checked + .dss-slider { background-color: #2271b1; }
+            input:checked + .dss-slider:before { transform: translateX(20px); }
+            input:disabled + .dss-slider { opacity: 0.4; cursor: not-allowed; }
+
+            /* ── Submit ── */
+            .dss-panel-submit {
+                background: #fff;
+                border: 1px solid #e2e8f0;
+                border-radius: 12px;
+                padding: 20px 25px;
+                display: flex;
+                align-items: center;
+            }
+            .dss-panel-submit .button-primary {
+                font-size: 14px !important;
+                padding: 8px 30px !important;
+                height: auto !important;
             }
 
-            input:checked+.dss-slider {
-                background-color: #2271b1;
-            }
-
-            input:checked+.dss-slider:before {
-                transform: translateX(20px);
-            }
-
-            .dss-addon-row td {
-                background: #f8fafc;
-            }
-            .dss-addon-row td:first-child {
-                border-left: 3px solid #2271b1;
-            }
-            .dss-addon-row td strong {
-                padding-left: 20px;
-                display: inline-block;
+            /* ── Responsive ── */
+            @media (max-width: 782px) {
+                .dss-cards-grid { grid-template-columns: 1fr; }
+                .dss-panel-header { flex-direction: column; align-items: flex-start; }
             }
         </style>
         <?php

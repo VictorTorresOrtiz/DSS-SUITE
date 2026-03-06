@@ -17,6 +17,7 @@ class DSS_SEO_Manager_Admin
         add_action('admin_menu', array($this, 'add_menu_page'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_assets'));
         add_action('wp_ajax_dss_seo_audit_scan', array($this, 'ajax_audit_scan'));
+        add_action('wp_ajax_dss_seo_audit_change_tag', array($this, 'ajax_audit_change_tag'));
 
         // Server-side replacement engine
         if (!is_admin()) {
@@ -201,7 +202,15 @@ class DSS_SEO_Manager_Admin
                     </button>
                     <span class="dss-audit-status" id="dss-audit-status"></span>
                 </div>
+                <div class="dss-audit-progress" id="dss-audit-progress" style="display:none;">
+                    <div class="dss-audit-progress-bar">
+                        <div class="dss-audit-progress-fill" id="dss-audit-progress-fill"></div>
+                    </div>
+                    <span class="dss-audit-progress-text" id="dss-audit-progress-text"></span>
+                </div>
+                <nav class="dss-audit-type-tabs" id="dss-audit-type-tabs" style="display:none;"></nav>
                 <div id="dss-audit-results"></div>
+                <div class="dss-audit-pagination" id="dss-audit-pagination" style="display:none;"></div>
             </div>
 
             <?php endif; ?>
@@ -296,7 +305,7 @@ class DSS_SEO_Manager_Admin
     }
 
     /**
-     * AJAX: Scan published pages for heading structure issues.
+     * AJAX: Scan published pages for heading structure issues (batched).
      */
     public function ajax_audit_scan()
     {
@@ -306,10 +315,30 @@ class DSS_SEO_Manager_Admin
             wp_send_json_error('Sin permisos.');
         }
 
+        $offset = intval($_POST['offset'] ?? 0);
+        $batch_size = 5;
+
+        $public_types = get_post_types(array('public' => true), 'objects');
+        unset($public_types['attachment'], $public_types['product']);
+        $type_slugs = array_keys($public_types);
+
+        // Get total count on first batch
+        $total = 0;
+        if ($offset === 0) {
+            $count_query = new WP_Query(array(
+                'post_type' => $type_slugs,
+                'post_status' => 'publish',
+                'posts_per_page' => -1,
+                'fields' => 'ids',
+            ));
+            $total = $count_query->found_posts;
+        }
+
         $posts = get_posts(array(
-            'post_type' => array('page', 'post'),
+            'post_type' => $type_slugs,
             'post_status' => 'publish',
-            'posts_per_page' => 50,
+            'posts_per_page' => $batch_size,
+            'offset' => $offset,
             'orderby' => 'date',
             'order' => 'DESC',
         ));
@@ -319,7 +348,7 @@ class DSS_SEO_Manager_Admin
         foreach ($posts as $post) {
             $url = get_permalink($post->ID);
             $response = wp_remote_get($url, array(
-                'timeout' => 15,
+                'timeout' => 10,
                 'sslverify' => false,
             ));
 
@@ -327,6 +356,8 @@ class DSS_SEO_Manager_Admin
                 $results[] = array(
                     'title' => $post->post_title,
                     'url' => $url,
+                    'type' => $post->post_type,
+                    'type_label' => isset($public_types[$post->post_type]) ? $public_types[$post->post_type]->labels->singular_name : $post->post_type,
                     'error' => true,
                     'message' => 'No se pudo acceder a la página.',
                 );
@@ -340,13 +371,73 @@ class DSS_SEO_Manager_Admin
                 'title' => $post->post_title,
                 'url' => $url,
                 'type' => $post->post_type,
+                'type_label' => isset($public_types[$post->post_type]) ? $public_types[$post->post_type]->labels->singular_name : $post->post_type,
                 'error' => false,
                 'headings' => $analysis['headings'],
                 'issues' => $analysis['issues'],
             );
         }
 
-        wp_send_json_success($results);
+        wp_send_json_success(array(
+            'results' => $results,
+            'total' => $total,
+            'offset' => $offset,
+            'batch_size' => $batch_size,
+            'has_more' => count($posts) === $batch_size,
+        ));
+    }
+
+    /**
+     * AJAX: Add or update a tag rule from the audit view.
+     */
+    public function ajax_audit_change_tag()
+    {
+        check_ajax_referer('dss_seo_audit_nonce', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Sin permisos.');
+        }
+
+        $selector = sanitize_text_field($_POST['selector'] ?? '');
+        $new_tag = sanitize_text_field($_POST['new_tag'] ?? '');
+
+        if (empty($selector) || empty($new_tag)) {
+            wp_send_json_error('Datos incompletos.');
+        }
+
+        $allowed_tags = array('h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'p', 'span');
+        if (!in_array($new_tag, $allowed_tags)) {
+            wp_send_json_error('Etiqueta no válida.');
+        }
+
+        $rules = get_option('tag_changer_rules', array());
+
+        // Check if rule for this selector already exists
+        $found = false;
+        foreach ($rules as &$rule) {
+            if ($rule['selector'] === $selector) {
+                $rule['tag'] = $new_tag;
+                $found = true;
+                break;
+            }
+        }
+        unset($rule);
+
+        if (!$found) {
+            $rules[] = array(
+                'selector' => $selector,
+                'tag' => $new_tag,
+                'extra_classes' => '',
+            );
+        }
+
+        update_option('tag_changer_rules', $rules);
+
+        wp_send_json_success(array(
+            'selector' => $selector,
+            'new_tag' => $new_tag,
+            'action' => $found ? 'updated' : 'created',
+        ));
     }
 
     /**
@@ -357,11 +448,33 @@ class DSS_SEO_Manager_Admin
         $headings = array();
         $issues = array();
 
-        if (preg_match_all('/<(h[1-6])[^>]*>(.*?)<\/\1>/is', $html, $matches, PREG_SET_ORDER)) {
+        if (preg_match_all('/<(h[1-6])([^>]*)>(.*?)<\/\1>/is', $html, $matches, PREG_SET_ORDER)) {
             foreach ($matches as $match) {
+                $classes = '';
+                if (preg_match('/class=["\']([^"\']*)["\']/', $match[2], $cls_match)) {
+                    $classes = trim($cls_match[1]);
+                }
+
+                $id_attr = '';
+                if (preg_match('/id=["\']([^"\']*)["\']/', $match[2], $id_match)) {
+                    $id_attr = trim($id_match[1]);
+                }
+
+                // Build the best available CSS selector
+                $tag_lower = strtolower($match[1]);
+                $selector = $tag_lower;
+                if (!empty($classes)) {
+                    $first_class = explode(' ', $classes)[0];
+                    $selector = $tag_lower . '.' . $first_class;
+                } elseif (!empty($id_attr)) {
+                    $selector = $tag_lower . '#' . $id_attr;
+                }
+
                 $headings[] = array(
                     'tag' => strtoupper($match[1]),
-                    'text' => wp_strip_all_tags($match[2]),
+                    'text' => wp_strip_all_tags($match[3]),
+                    'classes' => $classes,
+                    'selector' => $selector,
                 );
             }
         }

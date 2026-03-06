@@ -52,8 +52,8 @@ class DSS_Theme_Branding
     {
         add_submenu_page(
             'dss-suite',
-            'Marca del Tema',
-            'Marca del Tema',
+            'Centro de control',
+            'Centro de control',
             'manage_options',
             'custom-theme-branding',
             array($this, 'settings_page_html')

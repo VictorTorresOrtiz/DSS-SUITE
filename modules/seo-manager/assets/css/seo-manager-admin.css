@@ -274,6 +274,49 @@
 .dss-tag-h5 { background: #ede9fe; color: #7c3aed; }
 .dss-tag-h6 { background: #f1f5f9; color: #64748b; }
 
+/* Heading Changer Select */
+.dss-heading-changer {
+    padding: 2px 6px;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    background: #fff;
+    cursor: pointer;
+    transition: all 0.2s;
+    vertical-align: middle;
+    margin: 0 4px;
+}
+
+.dss-heading-changer:hover {
+    border-color: #2271b1;
+}
+
+.dss-heading-changer:focus {
+    border-color: #2271b1;
+    box-shadow: 0 0 0 2px rgba(34, 113, 177, 0.15);
+    outline: none;
+}
+
+.dss-heading-changer.dss-changer-saved {
+    border-color: #22c55e;
+    background: #f0fdf4;
+}
+
+.dss-heading-changer.dss-changer-error {
+    border-color: #ef4444;
+    background: #fef2f2;
+}
+
+.dss-heading-text {
+    vertical-align: middle;
+}
+
+.dss-heading-tree li {
+    display: flex;
+    align-items: center;
+}
+
 .dss-audit-clean {
     color: #16a34a;
     font-size: 13px;
@@ -283,4 +326,149 @@
 .dss-audit-error {
     color: #ef4444;
     font-size: 13px;
+}
+
+/* Progress Bar */
+.dss-audit-progress {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.dss-audit-progress-bar {
+    flex: 1;
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.dss-audit-progress-fill {
+    height: 100%;
+    background: #2271b1;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+    width: 0%;
+}
+
+.dss-audit-progress-text {
+    font-size: 13px;
+    color: #64748b;
+    white-space: nowrap;
+    min-width: 160px;
+    text-align: right;
+}
+
+/* Type Tabs */
+.dss-audit-type-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #e2e8f0;
+    flex-wrap: wrap;
+}
+
+.dss-audit-type-tab {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 18px;
+    text-decoration: none;
+    color: #64748b;
+    font-weight: 500;
+    font-size: 13px;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.dss-audit-type-tab:hover {
+    color: #2271b1;
+}
+
+.dss-audit-type-tab:focus {
+    box-shadow: none;
+    outline: none;
+}
+
+.dss-audit-type-tab.active {
+    color: #2271b1;
+    border-bottom-color: #2271b1;
+    font-weight: 600;
+}
+
+.dss-audit-tab-count {
+    background: #f1f5f9;
+    color: #94a3b8;
+    padding: 1px 7px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.dss-audit-type-tab.active .dss-audit-tab-count {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+.dss-audit-tab-issues {
+    background: #fef3c7;
+    color: #d97706;
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+/* Pagination */
+.dss-audit-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 0;
+    margin-top: 15px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.dss-pag-info {
+    font-size: 13px;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.dss-pag-buttons {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.dss-pag-btn {
+    min-width: 36px;
+    height: 36px !important;
+    padding: 0 10px !important;
+    font-size: 13px !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px !important;
+}
+
+.dss-pag-btn.dss-pag-active {
+    background: #2271b1 !important;
+    border-color: #2271b1 !important;
+    color: #fff !important;
+    font-weight: 700;
+}
+
+.dss-pag-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.dss-pag-dots {
+    padding: 0 6px;
+    color: #94a3b8;
+    font-size: 14px;
 }

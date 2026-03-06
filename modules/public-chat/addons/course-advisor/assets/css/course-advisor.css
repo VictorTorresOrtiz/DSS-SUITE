@@ -1,0 +1,220 @@
+/* ── Course Advisor Addon ── */
+
+/* Quick question chips */
+.dss-ca-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 0;
+}
+
+.dss-ca-chip {
+    background: #f0f7ff;
+    border: 1px solid #bfdbfe;
+    color: #1d4ed8;
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.dss-ca-chip:hover {
+    background: #dbeafe;
+    border-color: #93c5fd;
+}
+
+.dss-ca-chip .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+}
+
+/* Typing indicator */
+.dss-typing {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 12px 16px !important;
+    min-height: auto !important;
+}
+
+.dss-typing span {
+    width: 8px;
+    height: 8px;
+    background: #94a3b8;
+    border-radius: 50%;
+    animation: dss-typing-bounce 1.4s infinite;
+}
+
+.dss-typing span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.dss-typing span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes dss-typing-bounce {
+    0%, 60%, 100% {
+        transform: translateY(0);
+        opacity: 0.4;
+    }
+    30% {
+        transform: translateY(-6px);
+        opacity: 1;
+    }
+}
+
+/* Course cards */
+.dss-ca-course-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 5px 0 10px;
+}
+
+.dss-ca-course-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.2s;
+}
+
+.dss-ca-course-card:hover {
+    border-color: #2271b1;
+    box-shadow: 0 4px 12px rgba(34, 113, 177, 0.12);
+    transform: translateY(-1px);
+}
+
+.dss-ca-card-img {
+    width: 50px;
+    height: 50px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.dss-ca-card-img-placeholder {
+    width: 50px;
+    height: 50px;
+    border-radius: 8px;
+    background: #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: #94a3b8;
+}
+
+.dss-ca-card-img-placeholder .dashicons {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+}
+
+.dss-ca-card-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.dss-ca-card-name {
+    font-weight: 600;
+    font-size: 13px;
+    color: #1e293b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dss-ca-card-cats {
+    font-size: 11px;
+    color: #94a3b8;
+}
+
+.dss-ca-card-price {
+    font-size: 13px;
+    font-weight: 700;
+    color: #2271b1;
+}
+
+.dss-ca-card-arrow {
+    color: #94a3b8;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    transition: color 0.2s;
+}
+
+.dss-ca-course-card:hover .dss-ca-card-arrow {
+    color: #2271b1;
+}
+
+/* Footer form */
+#dss-ca-form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+}
+
+#dss-ca-form textarea {
+    flex: 1;
+    resize: none;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    min-height: 40px;
+    max-height: 80px;
+}
+
+#dss-ca-form textarea:focus {
+    border-color: #2271b1;
+    box-shadow: 0 0 0 2px rgba(34, 113, 177, 0.1);
+}
+
+.dss-ca-send-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #2271b1;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.2s;
+}
+
+.dss-ca-send-btn:hover {
+    background: #1a5a8e;
+}
+
+.dss-ca-send-btn:disabled {
+    background: #cbd5e1;
+    cursor: not-allowed;
+}
+
+.dss-ca-send-btn .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+}
