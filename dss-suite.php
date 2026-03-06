@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-define( 'DSS_SUITE_VERSION', '2.0.1' );
+define( 'DSS_SUITE_VERSION', '3.5' );
 define( 'DSS_SUITE_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'DSS_SUITE_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
@@ -25,3 +25,5 @@ function dss_suite_init() {
 	new DSS_Suite_Core();
 }
 add_action( 'plugins_loaded', 'dss_suite_init' );
+//TODO: Cuando se active el addon de el chat de formaciones crear en el menu de public chat una configuración segun el addon activo
+//TODO: Rediseñar la interfaz de la página de el chat público
