@@ -224,14 +224,32 @@ class DSS_Public_Chat_Admin
     /**
      * Enqueue assets for the public side.
      */
+    /**
+     * Detect which addon mode is active.
+     */
+    public function get_active_mode()
+    {
+        $active_modules = get_option('dss_suite_active_modules', array());
+
+        // Check addons in priority order (first match wins)
+        if (!empty($active_modules['room-designer']) && $active_modules['room-designer'] === '1') {
+            return 'room-designer';
+        }
+
+        return 'default';
+    }
+
     public function enqueue_public_assets()
     {
+        $mode = $this->get_active_mode();
+
         wp_enqueue_style('dss-public-chat-style', DSS_PUBLIC_CHAT_URL . 'assets/css/public-chat.css', array('dashicons'), DSS_PUBLIC_CHAT_VERSION);
         wp_enqueue_script('dss-public-chat-script', DSS_PUBLIC_CHAT_URL . 'assets/js/public-chat.js', array('jquery'), DSS_PUBLIC_CHAT_VERSION, true);
 
         wp_localize_script('dss-public-chat-script', 'dssPublicChat', array(
             'ajaxUrl' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('dss_public_chat_nonce'),
+            'mode' => $mode,
         ));
     }
 
@@ -240,54 +258,98 @@ class DSS_Public_Chat_Admin
      */
     public function render_public_chatbox()
     {
-        $shortcuts = get_option('dss_public_chat_shortcuts', array());
+        $mode = $this->get_active_mode();
         $logo_url = get_option('dss_public_chat_logo', DSS_PUBLIC_CHAT_URL . 'assets/images/dss-logo.svg');
+
+        // Mode-specific config
+        $modes = array(
+            'default' => array(
+                'icon' => 'dashicons-format-chat',
+                'title' => 'Asistente Personal',
+                'welcome' => '¡Hola! Soy tu asistente de ' . esc_html(get_bloginfo('name')) . '. ¿En qué puedo ayudarte?',
+            ),
+            'room-designer' => array(
+                'icon' => 'dashicons-admin-home',
+                'title' => 'Room Designer',
+                'welcome' => '¡Hola! Sube una foto de tu habitación y te mostraré cómo quedaría con nuestros muebles.',
+            ),
+        );
+
+        $cfg = $modes[$mode] ?? $modes['default'];
         ?>
-        <div id="dss-public-chat-container">
+        <div id="dss-public-chat-container" data-mode="<?php echo esc_attr($mode); ?>">
             <div id="dss-public-chat-button">
-                <span class="dashicons dashicons-format-chat"></span>
+                <span class="dashicons <?php echo esc_attr($cfg['icon']); ?>"></span>
             </div>
             <div id="dss-public-chat-window" style="display: none;">
                 <div class="dss-public-chat-header">
-                    <img src="<?php echo esc_url($logo_url); ?>" alt="DSS Logo" class="dss-chatbox-logo"
+                    <img src="<?php echo esc_url($logo_url); ?>" alt="Logo" class="dss-chatbox-logo"
                         style="border-radius: 50%; width: 30px; height: 30px; background: #fff; padding: 2px;">
-                    <h3>Asistente Personal</h3>
+                    <h3><?php echo esc_html($cfg['title']); ?></h3>
                     <button id="dss-public-chat-close">&times;</button>
                 </div>
                 <div id="dss-public-chat-history" class="dss-public-chat-body">
-                    <div class="dss-message dss-bot-message">¡Hola! Soy tu asistente de
-                        <?php echo esc_html(get_bloginfo('name')); ?>. ¿En qué puedo ayudarte?
-                    </div>
+                    <div class="dss-message dss-bot-message"><?php echo $cfg['welcome']; ?></div>
 
-                    <?php if (!empty($shortcuts)): ?>
-                        <div class="dss-suggestion-chips">
-                            <?php foreach ($shortcuts as $shortcut): ?>
-                                <button class="dss-chip" data-query="<?php echo esc_attr($shortcut['query']); ?>">
-                                    <?php if (!empty($shortcut['icon'])): ?>
-                                        <span class="dashicons <?php echo esc_attr($shortcut['icon']); ?>"></span>
-                                    <?php endif; ?>
-                                    <?php echo esc_html($shortcut['label']); ?>
-                                </button>
-                            <?php endforeach; ?>
+                    <?php if ($mode === 'default'): ?>
+                        <?php
+                        $shortcuts = get_option('dss_public_chat_shortcuts', array());
+                        if (!empty($shortcuts)):
+                        ?>
+                            <div class="dss-suggestion-chips">
+                                <?php foreach ($shortcuts as $shortcut): ?>
+                                    <button class="dss-chip" data-query="<?php echo esc_attr($shortcut['query']); ?>">
+                                        <?php if (!empty($shortcut['icon'])): ?>
+                                            <span class="dashicons <?php echo esc_attr($shortcut['icon']); ?>"></span>
+                                        <?php endif; ?>
+                                        <?php echo esc_html($shortcut['label']); ?>
+                                    </button>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
+                    <?php endif; ?>
+
+                    <?php if ($mode === 'room-designer'): ?>
+                        <div class="dss-rd-upload-zone" id="dss-rd-dropzone">
+                            <span class="dashicons dashicons-format-image"></span>
+                            <p>Arrastra una foto de tu habitación aquí</p>
+                            <span class="dss-rd-or">o</span>
+                            <label class="button button-secondary dss-rd-file-label">
+                                Seleccionar Foto
+                                <input type="file" id="dss-rd-file" accept="image/*" style="display:none;">
+                            </label>
+                        </div>
+                        <div class="dss-rd-preview" style="display:none;">
+                            <img id="dss-rd-preview-img" src="">
+                            <button class="button button-small dss-rd-change-img">Cambiar foto</button>
                         </div>
                     <?php endif; ?>
                 </div>
                 <div class="dss-public-chat-footer">
-                    <div id="dss-preview-container" style="display: none; padding: 10px; border-top: 1px solid #eee;">
-                        <img id="dss-image-preview" src="#" style="max-width: 50px; border-radius: 5px;">
-                        <button id="dss-remove-image">&times;</button>
-                    </div>
-                    <form id="dss-public-chat-form">
-                        <label for="dss-image-upload" class="dss-upload-label">
-                            <span class="dashicons dashicons-camera"></span>
-                            <input type="file" id="dss-image-upload" accept="image/*" style="display: none;">
-                        </label>
-                        <textarea name="chat_message" placeholder="Escribe aquí..." required></textarea>
-                        <button type="submit" id="dss-public-chat-send">
-                            <img src="<?php echo DSS_PUBLIC_CHAT_URL . 'assets/images/enviar.gif'; ?>" alt="Enviar"
-                                style="width: 100%; height: 100%; object-fit: cover;">
-                        </button>
-                    </form>
+                    <?php if ($mode === 'default'): ?>
+                        <div id="dss-preview-container" style="display: none; padding: 10px; border-top: 1px solid #eee;">
+                            <img id="dss-image-preview" src="#" style="max-width: 50px; border-radius: 5px;">
+                            <button id="dss-remove-image">&times;</button>
+                        </div>
+                        <form id="dss-public-chat-form">
+                            <label for="dss-image-upload" class="dss-upload-label">
+                                <span class="dashicons dashicons-camera"></span>
+                                <input type="file" id="dss-image-upload" accept="image/*" style="display: none;">
+                            </label>
+                            <textarea name="chat_message" placeholder="Escribe aquí..." required></textarea>
+                            <button type="submit" id="dss-public-chat-send">
+                                <img src="<?php echo DSS_PUBLIC_CHAT_URL . 'assets/images/enviar.gif'; ?>" alt="Enviar"
+                                    style="width: 100%; height: 100%; object-fit: cover;">
+                            </button>
+                        </form>
+                    <?php elseif ($mode === 'room-designer'): ?>
+                        <form id="dss-rd-form">
+                            <textarea name="room_notes" placeholder="Describe tu estilo o preferencias (opcional)..." rows="1"></textarea>
+                            <button type="submit" class="dss-rd-send-btn" disabled>
+                                <span class="dashicons dashicons-art"></span>
+                            </button>
+                        </form>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>

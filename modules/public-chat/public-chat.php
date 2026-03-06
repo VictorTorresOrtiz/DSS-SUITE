@@ -22,3 +22,4 @@ function dss_public_chat_init()
     new DSS_Public_Chat_Admin();
 }
 add_action('init', 'dss_public_chat_init');
+

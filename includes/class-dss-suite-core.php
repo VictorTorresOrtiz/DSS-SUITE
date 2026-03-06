@@ -45,7 +45,18 @@ class DSS_Suite_Core
             'name' => 'Chat Público Beta (Premium)',
             'description' => 'Chatbot flotante para la parte pública con soporte de fotos y prompts personalizados.',
             'file' => 'public-chat/public-chat.php',
-        )
+        ),
+        'room-designer' => array(
+            'name' => 'Addon: Room Designer',
+            'description' => 'El cliente sube una foto de su habitación y la IA coloca los muebles de tu tienda.',
+            'file' => 'public-chat/addons/room-designer/room-designer.php',
+            'requires' => 'public-chat',
+        ),
+        'duplicate-finder' => array(
+            'name' => 'Duplicate Finder',
+            'description' => 'Encuentra y gestiona productos duplicados en WooCommerce.',
+            'file' => 'duplicate-finder/function.php',
+        ),
     );
 
     /**
@@ -127,7 +138,7 @@ class DSS_Suite_Core
                 <span class="dashicons dashicons-lock"
                     style="font-size: 48px; width: 48px; height: 48px; color: #2271b1; margin-bottom: 20px;"></span>
                 <h1 style="font-size: 24px; margin-bottom: 10px;">Acceso Protegido</h1>
-                <p style="color: #64748b; margin-bottom: 30px;">Introduce la Master Key de DSS Suite para gestionar ajustes
+                <p style="color: #64748b; margin-bottom: 30px;">Introduce la clave de licencia para gestionar ajustes
                     críticos.</p>
 
                 <?php settings_errors('dss_suite_messages'); ?>
@@ -141,9 +152,6 @@ class DSS_Suite_Core
                         Desbloquear Panel
                     </button>
                 </form>
-                <p style="margin-top: 20px; font-size: 12px; color: #94a3b8;">
-                    Esta sección está restringida incluso para administradores.
-                </p>
             </div>
         </div>
         <?php
@@ -213,6 +221,13 @@ class DSS_Suite_Core
             // Check if module is enabled (or if nothing is configured yet, we can default to disabled or enabled depending on preference)
             // Let's default to enabled if the array is empty meaning first run? Actually, safer to default to disabled to prevent sudden changes, or strictly check array.
             if (isset($active_modules[$slug]) && $active_modules[$slug] === '1') {
+                // Check dependency
+                if (!empty($module['requires'])) {
+                    $req = $module['requires'];
+                    if (!isset($active_modules[$req]) || $active_modules[$req] !== '1') {
+                        continue;
+                    }
+                }
                 $module_file = DSS_SUITE_PLUGIN_DIR . 'modules/' . $module['file'];
                 if (file_exists($module_file)) {
                     require_once $module_file;
@@ -255,6 +270,19 @@ class DSS_Suite_Core
             <form action="options.php" method="post">
                 <?php settings_fields('dss_suite_options_group'); ?>
 
+                <?php
+                $core_modules = array();
+                $addon_modules = array();
+                foreach ($this->modules as $slug => $module) {
+                    if (!empty($module['requires'])) {
+                        $addon_modules[$slug] = $module;
+                    } else {
+                        $core_modules[$slug] = $module;
+                    }
+                }
+                ?>
+
+                <h2 style="margin-top:10px;">Módulos</h2>
                 <table class="wp-list-table widefat fixed striped">
                     <thead>
                         <tr>
@@ -264,7 +292,7 @@ class DSS_Suite_Core
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($this->modules as $slug => $module): ?>
+                        <?php foreach ($core_modules as $slug => $module): ?>
                             <?php $is_checked = isset($active_modules[$slug]) && $active_modules[$slug] === '1'; ?>
                             <tr>
                                 <td>
@@ -280,6 +308,45 @@ class DSS_Suite_Core
                         <?php endforeach; ?>
                     </tbody>
                 </table>
+
+                <?php if (!empty($addon_modules)): ?>
+                <h2 style="margin-top:30px;">Addons</h2>
+                <table class="wp-list-table widefat fixed striped">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">Estado</th>
+                            <th>Addon</th>
+                            <th>Descripción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($addon_modules as $slug => $module): ?>
+                            <?php
+                            $is_checked = isset($active_modules[$slug]) && $active_modules[$slug] === '1';
+                            $req = $module['requires'];
+                            $dep_active = isset($active_modules[$req]) && $active_modules[$req] === '1';
+                            $dep_missing = !$dep_active;
+                            ?>
+                            <tr class="dss-addon-row">
+                                <td>
+                                    <label class="dss-switch">
+                                        <input type="checkbox" name="dss_suite_active_modules[<?php echo esc_attr($slug); ?>]"
+                                            value="1" <?php checked($is_checked, true); ?> <?php echo $dep_missing ? 'disabled' : ''; ?>>
+                                        <span class="dss-slider"></span>
+                                    </label>
+                                </td>
+                                <td>
+                                    <strong><?php echo esc_html($module['name']); ?></strong>
+                                    <?php if ($dep_missing): ?>
+                                        <br><small style="color:#ef4444;">Requiere: <?php echo esc_html($this->modules[$req]['name']); ?></small>
+                                    <?php endif; ?>
+                                </td>
+                                <td><?php echo esc_html($module['description']); ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+                <?php endif; ?>
 
                 <?php submit_button('Guardar Cambios'); ?>
             </form>
@@ -392,6 +459,17 @@ class DSS_Suite_Core
 
             input:checked+.dss-slider:before {
                 transform: translateX(20px);
+            }
+
+            .dss-addon-row td {
+                background: #f8fafc;
+            }
+            .dss-addon-row td:first-child {
+                border-left: 3px solid #2271b1;
+            }
+            .dss-addon-row td strong {
+                padding-left: 20px;
+                display: inline-block;
             }
         </style>
         <?php
