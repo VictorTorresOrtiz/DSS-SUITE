@@ -35,7 +35,7 @@ assets/                           # Recursos globales (CSS, JS)
 
 Gestiona la activacion de modulos de forma granular. Los modulos inactivos no consumen recursos del servidor. Protegido con Master Key definida en `wp-config.php`.
 
-### 2. IA y Licencia
+### IA y Licencia
 
 Configuracion centralizada para la **Gemini API Key** y el sistema de licencias. Los modulos de chat utilizan estos ajustes por defecto.
 
@@ -49,7 +49,7 @@ Utiliza un motor basado en `DOMDocument` y `XPath` para modificar la estructura 
 
 ### 5. Widget & Theme Controller (White Label)
 
-Permite una marca blanca total del sitio:
+Control total sobre la apariencia del sitio WordPress:
 
 - Reemplazo del logo de WordPress en la barra superior.
 - Personalizacion de creditos en el pie de pagina.
@@ -91,7 +91,13 @@ API remota via `admin-ajax.php` para que **DSS Gestion** pueda administrar el si
 | `maintenance_toggle` | Activar/desactivar modo mantenimiento |
 | `cache_flush` | Limpiar cache y transients |
 
----
+### Content Sorter
+
+Ordenamiento manual mediante **Drag & Drop** para cualquier Custom Post Type (CPT) y taxonomía registrada en WordPress.
+
+### Chatbox de Soporte (Premium)
+
+Chatbox moderno integrado en el área de administración de WordPress. Utiliza la **API de Gemini** para ofrecer un asistente de IA al administrador del sitio, ideal para consultas de clientes y soporte técnico.
 
 ## Guia de Desarrollo de Modulos
 
