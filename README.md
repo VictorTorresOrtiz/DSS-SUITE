@@ -1,67 +1,95 @@
-# DSS Suite (v3.5)
+# DSS Suite (v3.0)
 
-DSS Suite es una plataforma modular de **WordPress** diseñada para centralizar herramientas de SEO, branding, soporte mediante IA y personalización del escritorio bajo una arquitectura única, profesional y de alto rendimiento.
+DSS Suite es una plataforma modular de **WordPress** disenada para centralizar herramientas de SEO, branding, soporte mediante IA, gestion remota y personalizacion del escritorio bajo una arquitectura unica, profesional y de alto rendimiento.
 
 ---
 
 ## Arquitectura del Sistema
 
-El plugin opera bajo un modelo de **Núcleo + Módulos**. El núcleo se encarga de la orquestación global, mientras que cada funcionalidad reside en un módulo independiente que puede ser activado o desactivado. Los módulos inactivos no consumen recursos del servidor.
-
-### Flujo de Inicialización
-
-1. `dss-suite.php` se ejecuta en el hook `plugins_loaded`.
-2. Instancia `DSS_Suite_Core` (en `includes/class-dss-suite-core.php`).
-3. El Core carga el singleton `DSS_Notifications`.
-4. Registra el menú de administración (posición 65, slug `dss-suite`).
-5. Ejecuta `load_modules()` — solo carga los módulos habilitados en `get_option('dss_suite_active_modules')`.
+El plugin opera bajo un modelo de **Nucleo + Modulos**. El nucleo se encarga de la orquestacion global, mientras que cada funcionalidad reside en un modulo independiente que puede ser activado o desactivado desde el Panel de Control.
 
 ### Estructura de Directorios
 
 ```
-DSS-SUITE/
-  dss-suite.php                          # Punto de entrada
-  includes/
-    class-dss-suite-core.php             # Orquestación central
-    class-dss-notifications.php          # Singleton de notificaciones
-  modules/
-    dashboard/                           # Rediseño visual del escritorio de WordPress
-    seo-manager/                         # Motor de etiquetas H1-H6 + auditoría SEO
-    white-label/                         # Marca blanca, widgets y control de tema
-    cpt-sorter/                          # Ordenamiento Drag & Drop para CPTs
-    chatbox/                             # Asistente IA para el administrador (Gemini)
-    public-chat/                         # Chatbot flotante para visitantes (Gemini)
-      addons/
-        room-designer/                   # Addon: Diseñador de habitaciones con IA
-        course-advisor/                  # Addon: Asesor de formaciones con IA
-    duplicate-finder/                    # Buscador de productos duplicados en WooCommerce
-  assets/                                # Recursos globales (CSS, JS)
+dss-suite.php                     # Entry point del plugin
+includes/
+  class-dss-suite-core.php        # Core: registro de modulos, menu, auth
+  class-dss-notifications.php     # Sistema de notificaciones toast
+modules/
+  dashboard/                      # Rediseno visual del escritorio WP
+  seo-manager/                    # Motor de procesamiento de etiquetas HTML
+  white-label/                    # Marca blanca, widgets y branding
+  chatbox/                        # Asistente IA para administradores (Gemini)
+  public-chat/                    # Chatbot flotante para visitantes
+    addons/room-designer/         # Addon: diseno de interiores con IA
+  cpt-sorter/                     # Ordenamiento Drag & Drop para CPTs
+  dss-connector/                  # API remota para DSS Gestion
+assets/                           # Recursos globales (CSS, JS)
 ```
 
 ---
 
-## Módulos
+## Modulos
 
-### Centro de Control
+### 1. Panel de Control (Core)
 
-Panel principal protegido por **Master Key** (definida en `wp-config.php`). Permite activar y desactivar módulos de forma granular mediante una interfaz visual con tarjetas y switches.
+Gestiona la activacion de modulos de forma granular. Los modulos inactivos no consumen recursos del servidor. Protegido con Master Key definida en `wp-config.php`.
 
 ### IA y Licencia
 
-Configuración centralizada para la **Gemini API Key** y el sistema de licencias (número de factura). Los módulos de chat utilizan estos ajustes de forma compartida.
+Configuracion centralizada para la **Gemini API Key** y el sistema de licencias. Los modulos de chat utilizan estos ajustes por defecto.
 
-### SEO Manager
+### 3. DSS Dashboard
 
-Motor basado en `DOMDocument` y `XPath` que modifica la estructura de encabezados HTML (H1-H6) en tiempo real del lado del servidor, antes de que la página sea enviada al cliente. Permite añadir clases personalizadas a las etiquetas.
+Rediseno completo del escritorio de WordPress con modulos internos de navegacion, colores, login, footer y demos.
 
-### White Label Pro (Widget & Theme Controller)
+### 4. SEO Manager (Server-Side)
+
+Utiliza un motor basado en `DOMDocument` y `XPath` para modificar la estructura de encabezados (H1-H6) y clases HTML en tiempo real antes de que la pagina sea enviada al cliente.
+
+### 5. Widget & Theme Controller (White Label)
 
 Control total sobre la apariencia del sitio WordPress:
 
 - Reemplazo del logo de WordPress en la barra superior.
-- Personalización de créditos en el pie de página.
-- Ocultación selectiva de avisos de actualización del sistema.
-- Gestión de widgets del dashboard.
+- Personalizacion de creditos en el pie de pagina.
+- Widgets personalizados en el dashboard (Bienvenida, Ventas, Estado del Sistema, Consultas Pesadas).
+- Ocultacion selectiva de avisos de actualizacion.
+
+### 6. Content Sorter
+
+Ordenamiento manual (Drag & Drop) para cualquier CPT y taxonomia publica. Aplica el orden tanto en el frontend como en el listado de administracion.
+
+### 7. Chatbox de Soporte (Premium)
+
+Chatbox moderno en el area de administracion para consultas de clientes, impulsado por Gemini AI.
+
+### 8. Chat Publico (Premium)
+
+Chatbot flotante para la parte publica del sitio con soporte multimodal (texto e imagenes).
+
+### 9. Room Designer (Addon)
+
+Addon del Chat Publico. El cliente sube una foto de su habitacion y la IA sugiere y coloca muebles del catalogo WooCommerce. Utiliza Gemini 2.0 Flash con generacion de imagenes.
+
+**Requiere**: Chat Publico activo.
+
+### 10. DSS Connector
+
+API remota via `admin-ajax.php` para que **DSS Gestion** pueda administrar el sitio WordPress sin necesidad de SSH. Autenticacion por API Key (header `X-DSS-Key`).
+
+**Acciones disponibles:**
+
+| Accion | Descripcion |
+|--------|-------------|
+| `site_info` | Informacion general del sitio |
+| `plugin_list` / `plugin_update` / `plugin_update_all` | Gestion de plugins |
+| `theme_list` / `theme_update` / `theme_update_all` | Gestion de temas |
+| `user_list` / `user_create` / `user_delete` | Gestion de usuarios |
+| `core_version` / `core_check_update` / `core_update` | Actualizaciones de WordPress |
+| `db_export` | Exportar base de datos |
+| `maintenance_toggle` | Activar/desactivar modo mantenimiento |
+| `cache_flush` | Limpiar cache y transients |
 
 ### Content Sorter
 
@@ -71,58 +99,26 @@ Ordenamiento manual mediante **Drag & Drop** para cualquier Custom Post Type (CP
 
 Chatbox moderno integrado en el área de administración de WordPress. Utiliza la **API de Gemini** para ofrecer un asistente de IA al administrador del sitio, ideal para consultas de clientes y soporte técnico.
 
-### Chat Público Beta (Premium)
+## Guia de Desarrollo de Modulos
 
-Chatbot flotante para la parte pública del sitio web. Soporta envío de fotos y prompts personalizados, permitiendo a los visitantes interactuar con un asistente de IA potenciado por **Gemini**.
+Para anadir un nuevo modulo a la suite:
 
-### Addons del Chat Público
-
-| Addon | Descripción |
-|-------|-------------|
-| **Room Designer** | El cliente sube una foto de su habitación y la IA coloca los muebles de la tienda. Requiere WooCommerce. |
-| **Course Advisor** | Asesor IA para webs de formaciones. Recomienda cursos según los objetivos y nivel del visitante. |
-
-> Los addons requieren que el módulo **Chat Público** esté activo para funcionar.
-
-### Duplicate Finder
-
-Encuentra y gestiona productos duplicados en **WooCommerce**. Incluye detección multilingüe mediante **Polylang** y sistema de rollback por usuario.
+1. Crear una carpeta en `/modules/`.
+2. Definir un punto de entrada (ej: `nuevo-modulo.php`).
+3. Registrar el modulo en el array `$modules` de `class-dss-suite-core.php`.
+4. Implementar la clase de administracion usando el hook `admin_menu` bajo el slug padre `dss-suite`.
+5. Para addons, agregar la propiedad `requires` con el slug del modulo padre.
 
 ---
 
 ## Seguridad
 
 - Acceso restringido a usuarios con capacidad `manage_options`.
-- Protección mediante **Nonces** en todas las peticiones AJAX y formularios.
-- Sanitización estricta de entradas de usuario.
-- Páginas críticas protegidas por **Master Key** con transient de 8 horas.
+- Panel protegido con **Master Key** (definida en `wp-config.php` como `DSS_MASTER_KEY`).
+- Proteccion mediante **Nonces** en todas las peticiones AJAX.
+- Sanitizacion estricta de entradas de usuario.
+- API Connector autenticado via API Key con `hash_equals()`.
 
 ---
 
-## Dependencias Externas
-
-| Dependencia | Uso |
-|-------------|-----|
-| **WooCommerce** | Requerido por Duplicate Finder y Room Designer. |
-| **Polylang** | Opcional. Duplicate Finder detecta el idioma de los productos. |
-| **Gemini API** | Utilizada por Chatbox, Chat Público y sus addons. |
-
----
-
-## Guía de Desarrollo de Módulos
-
-1. Crear una carpeta en `modules/<slug>/`.
-2. Definir un punto de entrada (`function.php` o `<slug>.php`).
-3. Registrar el módulo en el array `$modules` de `class-dss-suite-core.php`.
-4. Usar `add_submenu_page('dss-suite', ...)` para el menú de administración.
-5. Seguir los patrones existentes de assets, AJAX y seguridad.
-
----
-
-## Licencia
-
-MIT
-
----
-
-Desarrollado por **Víctor Torres Ortiz** — [DSS NETWORK](https://dssnetwork.es)
+Desarrollado por **Victor Torres Ortiz** - [DSS NETWORK](https://dssnetwork.es)

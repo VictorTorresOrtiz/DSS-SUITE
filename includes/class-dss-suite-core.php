@@ -74,6 +74,13 @@ class DSS_Suite_Core
             'file' => 'duplicate-finder/function.php',
             'icon' => 'dashicons-controls-repeat',
         ),
+        'dss-connector' => array(
+            'name' => 'DSS Connector',
+            'description' => 'API remota para DSS Gestion via admin-ajax.php. Permite gestionar el sitio sin SSH.',
+            'file' => 'dss-connector/dss-connector.php',
+            'icon' => 'dashicons-cloud',
+            'beta' => true,
+        ),
     );
 
     /**
@@ -322,6 +329,7 @@ class DSS_Suite_Core
                             $is_checked = isset($active_modules[$slug]) && $active_modules[$slug] === '1';
                             $icon = $module['icon'] ?? 'dashicons-admin-plugins';
                             $is_premium = !empty($module['premium']);
+                            $is_beta = !empty($module['beta']);
                         ?>
                         <div class="dss-module-card <?php echo $is_checked ? 'active' : ''; ?>">
                             <div class="dss-module-card-header">
@@ -337,6 +345,9 @@ class DSS_Suite_Core
                                     <?php echo esc_html($module['name']); ?>
                                     <?php if ($is_premium): ?>
                                         <span class="dss-premium-badge">Premium</span>
+                                    <?php endif; ?>
+                                    <?php if ($is_beta): ?>
+                                        <span class="dss-beta-badge">Beta</span>
                                     <?php endif; ?>
                                 </h3>
                                 <p><?php echo esc_html($module['description']); ?></p>
@@ -365,6 +376,7 @@ class DSS_Suite_Core
                             $dep_active = isset($active_modules[$req]) && $active_modules[$req] === '1';
                             $dep_missing = !$dep_active;
                             $icon = $module['icon'] ?? 'dashicons-admin-plugins';
+                            $is_beta = !empty($module['beta']);
                         ?>
                         <div class="dss-module-card dss-addon-card <?php echo $is_checked ? 'active' : ''; ?> <?php echo $dep_missing ? 'disabled' : ''; ?>">
                             <div class="dss-module-card-header">
@@ -376,7 +388,12 @@ class DSS_Suite_Core
                                 </label>
                             </div>
                             <div class="dss-module-card-body">
-                                <h3><?php echo esc_html($module['name']); ?></h3>
+                                <h3>
+                                    <?php echo esc_html($module['name']); ?>
+                                    <?php if ($is_beta): ?>
+                                        <span class="dss-beta-badge">Beta</span>
+                                    <?php endif; ?>
+                                </h3>
                                 <p><?php echo esc_html($module['description']); ?></p>
                             </div>
                             <div class="dss-module-card-footer">
@@ -732,6 +749,18 @@ class DSS_Suite_Core
                 font-size: 14px !important;
                 padding: 8px 30px !important;
                 height: auto !important;
+            }
+
+            .dss-beta-badge {
+                background: #fef3c7;
+                color: #b45309;
+                padding: 2px 8px;
+                border: 1px solid #fcd34d;
+                border-radius: 4px;
+                font-size: 10px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
             }
 
             /* ── Responsive ── */
