@@ -21,3 +21,17 @@ new DSS_Connector_Admin();
 
 // API handler (admin-ajax endpoints)
 new DSS_Connector_Api();
+
+// Maintenance mode via option (no .maintenance file, never blocks admin-ajax)
+if ( get_option( 'dss_connector_maintenance', false ) ) {
+	add_action( 'template_redirect', function () {
+		if ( current_user_can( 'manage_options' ) ) {
+			return;
+		}
+		wp_die(
+			'<h1>Sitio en mantenimiento</h1><p>Estamos realizando tareas de mantenimiento. Vuelve pronto.</p>',
+			'Mantenimiento',
+			array( 'response' => 503 )
+		);
+	} );
+}

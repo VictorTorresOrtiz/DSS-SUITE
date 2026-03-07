@@ -435,15 +435,16 @@ class DSS_Connector_Api {
 
 	private function action_maintenance_toggle(): array {
 		$enable = isset( $_POST['enable'] ) ? filter_var( $_POST['enable'], FILTER_VALIDATE_BOOLEAN ) : false;
-		$file   = ABSPATH . '.maintenance';
 
 		if ( $enable ) {
-			$content = '<?php $upgrading = ' . time() . '; ?>';
-			file_put_contents( $file, $content );
+			update_option( 'dss_connector_maintenance', '1' );
 			return array( 'message' => 'Modo mantenimiento activado.', 'maintenance' => true );
 		} else {
+			delete_option( 'dss_connector_maintenance' );
+			// Also remove .maintenance file in case it exists from a previous method
+			$file = ABSPATH . '.maintenance';
 			if ( file_exists( $file ) ) {
-				unlink( $file );
+				@unlink( $file );
 			}
 			return array( 'message' => 'Modo mantenimiento desactivado.', 'maintenance' => false );
 		}
