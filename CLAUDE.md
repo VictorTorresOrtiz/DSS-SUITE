@@ -28,6 +28,7 @@ The plugin uses a **lazy-loading modular system**. The core orchestrates module 
 Modules are declared in `DSS_Suite_Core::$modules` array. Each entry has:
 - `name`, `description`, `file` (relative to `modules/`)
 - Optional `requires` for addon dependencies
+- Optional `icon` (dashicons class), `premium` (bool), `beta` (bool)
 
 ### Current Modules
 
@@ -39,8 +40,10 @@ Modules are declared in `DSS_Suite_Core::$modules` array. Each entry has:
 | `cpt-sorter` | Content Sorter | Function-based | `cpt-sorter/function.php` |
 | `chatbox` | Chatbox de Soporte | Class-based | `chatbox/chatbox.php` |
 | `public-chat` | Chat Publico Beta | Class-based | `public-chat/public-chat.php` |
-| `room-designer` | Addon: Room Designer | Class-based (addon) | `public-chat/addons/room-designer/room-designer.php` |
+| `room-designer` | Room Designer (addon) | Class-based | `public-chat/addons/room-designer/room-designer.php` |
+| `course-advisor` | Course Advisor (addon) | Class-based | `public-chat/addons/course-advisor/course-advisor.php` |
 | `duplicate-finder` | Duplicate Finder | Function-based | `duplicate-finder/function.php` |
+| `dss-connector` | DSS Connector (beta) | Class-based | `dss-connector/dss-connector.php` |
 
 ## Directory Structure
 
@@ -54,28 +57,21 @@ DSS-SUITE/
     css/dss-notifications.css
     js/dss-notifications.js
   includes/
-    class-dss-suite-core.php             # Core orchestration (~480 lines)
-    class-dss-notifications.php          # Notification singleton (~86 lines)
+    class-dss-suite-core.php             # Core orchestration
+    class-dss-notifications.php          # Notification singleton
   modules/
     dashboard/                           # WP dashboard redesign
     seo-manager/                         # H1-H6 tag changer + SEO audit
-      includes/class-seo-manager-admin.php
-      assets/{css,js}/
     white-label/                         # Branding, widgets, theme control
-      includes/class-theme-branding.php
-      includes/class-dashboard-widgets.php
-      admin/views/
     cpt-sorter/                          # Drag & drop ordering for CPTs
-      function.php
-      assets/{css,js}/
     chatbox/                             # Admin AI chat (Gemini)
-      includes/class-chatbox-admin.php
     public-chat/                         # Frontend AI chatbot (Gemini)
-      includes/class-public-chat-admin.php
       addons/room-designer/              # AI room designer addon
+      addons/course-advisor/             # AI course advisor addon
     duplicate-finder/                    # WooCommerce duplicate product finder
-      function.php
-      assets/{css,js}/
+    dss-connector/                       # Remote API for DSS Gestion
+      includes/class-dss-connector-admin.php  # API key management UI
+      includes/class-dss-connector-api.php    # AJAX endpoint handler
 ```
 
 ## Coding Patterns & Conventions
@@ -88,7 +84,7 @@ DSS-SUITE/
 - Menu via anonymous `add_action('admin_menu', function() { add_submenu_page('dss-suite', ...) })`
 - AJAX handlers as standalone functions
 
-**Class-based** (complex modules like `seo-manager`, `public-chat`):
+**Class-based** (complex modules like `seo-manager`, `public-chat`, `dss-connector`):
 - Loader file + `includes/class-*-admin.php`
 - Constants + version define
 - Constructor registers hooks
@@ -129,6 +125,7 @@ function handler_function() {
 - Nonce verification on every AJAX request and form submission
 - Input sanitization: `sanitize_text_field()`, `sanitize_textarea_field()`, `intval()`
 - Critical pages protected by Master Key (`DSS_MASTER_KEY` in wp-config.php, 8h transient)
+- DSS Connector authenticates via API Key (`X-DSS-Key` header or POST param) with `hash_equals()`
 
 ### CSS Design System
 
@@ -136,6 +133,8 @@ function handler_function() {
 - Neutral grays: `#64748b`, `#f8fafc`, `#e2e8f0`, `#1e293b`
 - Cards: `background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.05)`
 - Badge: `.dss-badge` — blue pill with uppercase text
+- Premium badge: `.dss-premium-badge` — amber gradient pill
+- Beta badge: `.dss-beta-badge` — amber outline pill
 - BEM-like naming: `.dss-<module>-<element>`
 - Language in Spanish for UI text
 
@@ -160,6 +159,7 @@ DSS_Notifications::get_instance()->add('Message', 'success', 'Title', 5000);
 | `dss_suite_gemini_api_key` | Global Gemini API key |
 | `dss_suite_invoice_number` | License/invoice number |
 | `tag_changer_rules` | SEO Manager rules |
+| `dss_connector_api_key` | DSS Connector API key for remote auth |
 | `dss_dupfinder_rollback_<user_id>` | Transient for duplicate finder rollback |
 
 ## How to Add a New Module
